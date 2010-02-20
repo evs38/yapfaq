@@ -1,0 +1,20 @@
+Version 0.5a
+
+- Fixed bug in readconfig().
+  Marc 'HE' Brockschmidt <marc@marcbrockschmidt.de>  16 Feb 2003 00:35:37
+  
+
+Version 0.5
+
+- Fixed PGP-Support (merging some code from tinews.pl). Seems to work well.
+  Marc 'HE' Brockschmidt <marc@marcbrockschmidt.de>  11 Jan 2003 3:46:57
+
+
+- General cleanup of the code, changing some weird behaviour and so on.
+  Marc 'HE' Brockschmidt <marc@marcbrockschmidt.de>  11 Jan 2003 2:27:23
+
+
+- Changed the name of the project. There was another postfaq before, so I
+  switched to yapfaq (yet another postfaq). I like the idea of a software-line
+  called ya-software for a possible commercial: "Buy ya software!"
+  Marc 'HE' Brockschmidt <marc@marcbrockschmidt.de>  11 Jan 2003 1:43:09
