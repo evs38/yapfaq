@@ -17,7 +17,7 @@ my $NNTPUser = "";
 my $NNTPPass = "";
 my $Sender = "";
 my $ConfigFile = "yapfaq.cfg";
-my $UsePGP = 1;
+my $UsePGP = 0;
 
 ################################## PGP-Config #################################
 
