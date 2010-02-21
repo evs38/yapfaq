@@ -1,16 +1,18 @@
 #! /usr/bin/perl -W
 #
-# yapfaq Version 0.5b by Marc 'HE' Brockschmidt
+# yapfaq Version 0.6 by Thomas Hochstein
+# (Original author: Marc Brockschmidt)
 #
-# This script posts any project described in it's config-file. Most persons
+# This script posts any project described in its config-file. Most people
 # will use it in combination with cron(8).
 # 
 # Copyright (C) 2003 Marc Brockschmidt <marc@marcbrockschmidt.de>
+# Copyright (c) 2010 Thomas Hochstein <thh@inter.net>
 #
 # It can be redistributed and/or modified under the same terms under 
 # which Perl itself is published.
 
-my $Version = "0.5b";
+my $Version = "0.6-unreleased";
 
 my $NNTPServer = "";
 my $NNTPUser = "";
