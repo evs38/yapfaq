@@ -79,7 +79,7 @@ foreach (@Config) {
     }
     close FH;
   } else { 
-    warn "Couldn't open $File.cfg: $!";
+    warn "Couldn't open $File.cfg: $!\n";
   }
 
   $SupersedeMID = "" unless $Supersede;
