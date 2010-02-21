@@ -54,10 +54,19 @@ use strict;
 use Net::NNTP;
 use Date::Calc qw(Add_Delta_YM Add_Delta_Days Delta_Days Today);
 use Fcntl ':flock'; # import LOCK_* constants
+use Getopt::Std;
 my ($TDY, $TDM, $TDD) = Today(); #TD: Today's date
 
+my %Options;
+getopts('hvpdt:f:', \%Options);
+if ($Options{'h'}) {
+  print "$0 v $Version\nUsage: $0 [-hvpd] [-t <newsgroups>] [-f <faq>]\n";
+  exit(0);
+};
+my ($Faq) = $Options{'f'} if ($Options{'f'});
+
 my @Config;
-readconfig (\$ConfigFile, \@Config);
+readconfig (\$ConfigFile, \@Config, \$Faq);
 
 foreach (@Config) { 
   my ($LPD,$LPM,$LPY) = (01, 01, 0001);  #LP: Last posting-date
@@ -68,7 +77,9 @@ foreach (@Config) {
   my ($From,$Subject,$NG,$Fup2)=($$_{'from'},$$_{'subject'},$$_{'ngs'},$$_{'fup2'});
   my ($MIDF,$ReplyTo,$ExtHea)=($$_{'mid-format'},$$_{'reply-to'},$$_{'extraheader'});
   my ($Supersede)            =($$_{'supersede'});
-    
+
+  next if (defined($Faq) && $ActName ne $Faq);
+	
   if (open (FH, "<$File.cfg")) {
     while(<FH>){
       if (/##;; Lastpost:\s*(\d{1,2})\.(\d{1,2})\.(\d{2}(\d{2})?)/){
@@ -90,23 +101,34 @@ foreach (@Config) {
     ($NPY,$NPM,$NPD) = Add_Delta_YM($LPY, $LPM, $LPD, (($2 eq "m")?(0,$1):($1,0)));
   }
     
-  if (Delta_Days($NPY,$NPM,$NPD,$TDY,$TDM,$TDD) >= 0 ) {
-    postfaq(\$ActName,\$File,\$From,\$Subject,\$NG,\$Fup2,\$MIDF,\$ExtHea,\$Sender,\$TDY,\$TDM,\$TDD,\$ReplyTo,\$SupersedeMID);
+  if (Delta_Days($NPY,$NPM,$NPD,$TDY,$TDM,$TDD) >= 0 or ($Options{'p'})) {
+    if($Options{'d'}) {
+	  print "$ActName: Would be posted now (but running in simulation mode [$0 -d]).\n" if $Options{'v'};
+	} else {
+      postfaq(\$ActName,\$File,\$From,\$Subject,\$NG,\$Fup2,\$MIDF,\$ExtHea,\$Sender,\$TDY,\$TDM,\$TDD,\$ReplyTo,\$SupersedeMID);
+	}
+  } elsif($Options{'v'}) {
+    print "$ActName: Nothing to do.\n";
   }
 }
 
 exit;
 
 ################################## readconfig ##################################
-# Takes a filename and the reference to an array, which will hold hashes with
-# the data from $File.
+# Takes a filename, a reference to an array, which will hold hashes with
+# the data from $File, and - optionally - the name of the (single) FAQ to post
 
 sub readconfig{
-  my ($File, $Config) = @_;
+  my ($File, $Config, $Faq) = @_;
   my ($LastEntry, $Error, $i) = ('','',0);
+
+  if($Options{'v'}) {
+    print "Reading configuration.\n";
+  }
 
   open FH, "<$$File" or die "$0: E: Can't open $$File: $!";
   while (<FH>) {
+    next if (defined($$Faq) && !/^\s*=====\s*$/ && defined($$Config[$i]{'name'}) && $$Config[$i]{'name'} ne $$Faq );
     if (/^(\s*(\S+)\s*=\s*'?(.*?)'?\s*(#.*$|$)|^(.*?)'?\s*(#.*$|$))/ && not /^\s*$/) {
       $LastEntry = lc($2) if $2;
       $$Config[$i]{$LastEntry} .= $3 if $3;  
@@ -120,6 +142,7 @@ sub readconfig{
 
   #Check saved values:
   for $i (0..$i){
+    next if (defined($$Faq) && defined($$Config[$i]{'name'}) && $$Config[$i]{'name'} ne $$Faq );
     unless($$Config[$i]{'from'} =~ /\S+\@(\S+\.)?\S{2,}\.\S{2,}/) {
       $Error .= "E: The From-header for your project \"$$Config[$i]{'name'}\" seems to be incorrect.\n"
     }
@@ -146,6 +169,10 @@ sub postfaq {
   my ($ActName,$File,$From,$Subject,$NG,$Fup2,$MIDF,$ExtraHeaders,$Sender,$TDY,$TDM,$TDD,$ReplyTo,$Supersedes) = @_;
   my (@Header,@Body,$MID,$InRealBody,$LastModified);
 
+  if($Options{'v'}) {
+    print "$$ActName: Preparing to post.\n";
+  }
+  
   #Prepare MID:
   $$TDM = ($$TDM < 10 && $$TDM !~ /^0/) ? "0" . $$TDM : $$TDM;
   $$TDD = ($$TDD < 10 && $$TDD !~ /^0/) ? "0" . $$TDD : $$TDD;
@@ -192,6 +219,11 @@ sub postfaq {
     $$Subject =~ s/\%LM/$LastModified/;
   }
 
+  # Test mode?
+  if($Options{'t'} and $Options{'t'} !~ /console/i) {
+    $$NG = $Options{'t'};
+  }
+
   #Now create the complete Header:
   push @Header, "From: $$From\n";
   push @Header, "Newsgroups: $$NG\n";
@@ -213,7 +245,14 @@ sub postfaq {
 
   my @Article = ($UsePGP)?@{signpgp(\@Header, \@Body)}:(@Header, "\n", @Body);
   
+  if($Options{'v'}) {
+    print "$$ActName: Posting article ...\n";
+  }
   post(\@Article);
+
+  if($Options{'v'}) {
+    print "$$ActName: Save status information.\n";
+  }
 
   open (FH, ">$$File.cfg") or die "$0: E: Can't open $$File.cfg: $!";
   print FH "##;; Lastpost: $day.$month.$year\n";
@@ -228,6 +267,14 @@ sub postfaq {
 
 sub post {
   my ($ArticleR) = @_;
+
+  # Test mode?
+  if(defined($Options{'t'}) and $Options{'t'} =~ /console/i) {
+    print "\n-----BEGIN--------------------------------------------------\n";
+	print @$ArticleR;
+    print "\n------END---------------------------------------------------\n";
+	return;
+  }
 
   my $NewsConnection = Net::NNTP->new($NNTPServer, Reader => 1)
     or die "$0: E: Can't connect to news server '$NNTPServer'!\n";
