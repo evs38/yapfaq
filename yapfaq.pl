@@ -239,7 +239,7 @@ sub post {
 
   if (!$NewsConnection->ok()) {
     open FH, ">>ERROR.dat";
-    print FH "\nPosting failed!  Response from news server:\n";
+    print FH "\nPosting failed! Saving to ERROR.dat. Response from news server:\n";
     print FH $NewsConnection->code();
     print FH $NewsConnection->message();
     print FH "\n";
