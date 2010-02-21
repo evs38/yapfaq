@@ -161,7 +161,7 @@ sub postfaq {
     s/\r//;
     push (@Body, $_), next if $InRealBody;
     $InRealBody++ if /^$/;
-    $LastModified = $1 if /^Last-modified: (\S+)$/;
+    $LastModified = $1 if /^Last-modified: (\S+)$/i;
     push @Body, $_;
   }
   close FH;
