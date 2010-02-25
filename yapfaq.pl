@@ -476,3 +476,329 @@ sub signpgp {
   my @pgpmessage = (@pgphead, "\n", @pgpbody);
   return \@pgpmessage;
 }
+
+__END__
+
+################################ Documentation #################################
+
+=head1 NAME
+
+yapfaq - Post Usenet FAQs I<(yet another postfaq)>
+
+=head1 SYNOPSIS
+
+B<yapfaq> [B<-hvpd>] [B<-t> I<newsgroups> | CONSOLE] [B<-f> I<project name>]
+
+=head1 REQUIREMENTS
+
+=over 2
+
+=item -
+
+Perl 5.8 or later
+
+=item -
+
+Net::NNTP
+
+=item -
+
+Date::Calc
+
+=item -
+
+Getopt::Std
+
+=back
+
+Furthermore you need access to a news server to actually post FAQs.
+
+=head1 DESCRIPTION
+
+B<yapfaq> posts (one or more) FAQs to Usenet with a certain posting
+frequency (every n days, weeks, months or years), adding all necessary
+headers as defined in its config file (by default F<yapfaq.cfg>).
+
+=head2 Configuration
+
+F<yapfaq.cfg> consists of one or more blocks, separated by C<=====> on
+a single line, each containing the configuration for one FAQ as a set
+of definitions in the form of I<param = value>.
+
+=over 4
+
+=item B<Name> = I<project name>
+
+A name referring to your FAQ, also used for generation of a Message-ID.
+
+This value must be set.
+
+=item B<File> = I<file name>
+
+A file containing the message body of your FAQ and all pseudo headers
+(subheaders in the news.answers style).
+
+This value must be set.
+
+=item B<Posting-frequency> = I<time period>
+
+The posting frequency defines how often your FAQ will be posted.
+B<yapfaq> will only post your FAQ if this period of time has passed
+since the last posting.
+
+You can declare that time period either in I<B<d>ays> or I<B<w>weeks>
+or I<B<m>onths> or I<B<y>ears>.
+
+This value must be set.
+
+=item B<Expires> = I<time period>
+
+The period of time after which your message will expire. An Expires
+header will be calculated adding this time period to today's date.
+
+You can declare this  time period either in I<B<d>ays> or I<B<w>weeks>
+or I<B<m>onths> or I<B<y>ears>.
+
+This setting is optional; the default  is 3 months.
+
+=item B<From> = I<author>
+
+The author of your FAQ as it will appear in the From header of the
+message.
+
+This value must be set.
+
+=item B<Subject> = I<subject>
+
+The title of your FAQ as it will appear in the Subject header of the
+message.
+
+You may use the special string C<%LM> which will be replaced with
+the contents of the Last-Modified subheader in your I<File>.
+
+This value must be set.
+
+=item B<NGs> = I<newsgroups>
+
+A comma-separated list of newsgroup(s) to post your FAQ to as it will
+appear in the Newsgroups header of the message.
+
+This value must be set.
+
+=item B<Fup2> = I<newsgroup | poster>
+
+A comma-separated list of newsgroup(s) or the special string I<poster>
+as it will appear in the Followup-To header of the message.
+
+This setting is optional.
+
+=item B<MID-Format> = I<pattern>
+
+A pattern from which the message ID is generated as it will appear in
+the Message-ID header of the message.
+
+You may use the special strings C<%n> for the I<Name> of your project,
+C<%d> for the date the message is posted, C<%m> for the month and
+C<%y> for the year, respectively.
+
+This value must be set.
+
+=item B<Supersede> = I<yes>
+
+Add Supersedes header to the message containing the Message-ID header
+of the last posting.
+
+This setting is optional; you should set it to yes or leave it out.
+
+=item B<ExtraHeader> = I<additional headers>
+
+The contents of I<ExtraHeader> is added verbatim to the headers of
+your message so you can add custom headers like Approved.
+
+This setting is optional.
+
+=back
+
+=head2 Example configuration file
+
+    # name of your project
+    Name = 'testpost'
+    
+    # file to post (complete body and pseudo-headers)
+    # ($File.cfg contains data on last posting and last MID)
+    File = 'test.txt'
+    
+    # how often your project should be posted
+    # use (d)ay OR (w)eek OR (m)onth OR (y)ear
+    Posting-frequency = '1d'
+    
+    # time period after which the posting should expire
+    # use (d)ay OR (w)eek OR (m)onth OR (y)ear
+    Expires = '3m'
+    
+    # header "From:"
+    From = 'test@domain.invalid'
+    
+    # header "Subject:"
+    # (may contain "%LM" which will be replaced by the contents of the
+    #  Last-Modified pseudo header).
+    Subject = 'test noreply ignore'
+    
+    # comma-separated list of newsgroup(s) to post to
+    # (header "Newsgroups:")
+    NGs = 'de.test'
+    
+    # header "Followup-To:"
+    Fup2 = 'poster'
+    
+    # Message-ID ("%n" is $Name)
+    MID-Format = '<%n-%d.%m.%y@domain.invalid>'
+    
+    # Supersede last posting?
+    Supersede = yes
+    
+    # extra headers (appended verbatim)
+    # use this for custom headers like "Approved:"
+    ExtraHeader = 'Approved: moderator@domain.invalid
+    X-Header: Some text'
+    
+    # other projects may follow separated with "====="
+    =====
+    
+    Name = 'othertest'
+    File = 'test.txt'
+    Posting-frequency = '2m'
+    From = 'My Name <my.name@domain.invalid>'
+    Subject = 'Test of yapfag <%LM>'
+    NGs = 'de.test,de.alt.test'
+    Fup2 = 'de.test'
+    MID-Format = '<%n-%m.%y@domain.invalid>'
+    Supersede = yes
+
+Information about the last post and about how to form message IDs for
+posts is stored in a file named F<I<project name>.cfg> which will be
+generated if it does not exist. Each of those status files will
+contain two lines, the first being the date of the last time the FAQ
+was posted and the second being the message ID of that incarnation.
+
+=head1 OPTIONS
+
+=over 3
+
+=item B<-h> (help)
+
+Print out version and usage information on B<yapfaq> and exit.
+
+=item B<-v> (verbose)
+
+Print out status information while running to STDOUT.
+
+=item B<-p> (post unconditionally)
+
+Post (all) FAQs unconditionally ignoring the posting frequency setting.
+
+You may want to use this with the B<-f> option (see below).
+
+=item B<-d> (dry run)
+
+Start B<yapfaq> in simulation mode, i.e. don't post anything and don't
+update any status information.
+
+=item B<-t> I<newsgroup(s) | CONSOLE> (test)
+
+Don't post to the newsgroups defined in F<yqpfaq.cfg>, but to the
+newsgroups given after B<-t> as a comma-separated list or print the
+FAQs to STDOUT separated by lines of dashes if the special string
+C<CONSOLE> is given.  This can be used to preview what B<yapfaq> would
+do without embarassing yourself on Usenet.  The status files are not
+updated when this option is given.
+
+You may want to use this with the B<-f> option (see below).
+
+=item B<-f> I<project name>
+
+Just deal with one FAQ only.
+
+By default B<yapfaq> will work on all FAQs that are defined in
+F<yapfaq.cfg>, check whether they are due for posting and - if they
+are - post them. Consequently when the B<-p> option is set all FAQs
+will be posted unconditionally. That may not be what you want to
+achieve, so you can limit the operation of B<yapfaq> to the named FAQ
+only.
+
+=back
+
+=head1 EXAMPLES
+
+Post all FAQs that are due for posting:
+
+    yapfaq
+
+Do a dry run, showing which FAQs would be posted:
+
+    yapfaq -dv
+
+Do a test run and print on STDOUT what the FAQ I<myfaq> would look
+like when posted, regardless whether it is due for posting or not:
+
+    yapfaq -pt CONSOLE -f myfaq
+
+Do a "real" test run and post the FAQ I<myfaq> to I<de.test>, but only
+if it is due:
+
+    yapfaq -t de.test -f myfaq
+
+=head1 ENVIRONMENT
+
+There are no special environment variables used by B<yapfaq>.
+
+=head1 FILES
+
+=over 4
+
+=item F<yapfaq.pl>
+
+The script itself.
+
+=item F<yapfaq.cfg>
+
+Configuration file for B<yapfaq>.
+
+=item F<*.cfg>
+
+Status data on FAQs.
+
+The status files will be created on successful posting if they don't
+already exist. The first line of the file will be the date of the last
+time the FAQ was posted and the second line will be the message ID of
+the last post of that FAQ.
+
+=back
+
+=head1 BUGS
+
+Many, I'm sure.
+
+=head1 SEE ALSO
+
+L<http://th-h.de/download/scripts.php> will have the current
+version of this program.
+
+=head1 AUTHOR
+
+Thomas Hochstein <thh@inter.net>
+
+Original author (until version 0.5b from 2003):
+Marc Brockschmidt <marc@marcbrockschmidt.de>
+
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (c) 2003 Marc Brockschmidt <marc@marcbrockschmidt.de>
+
+Copyright (c) 2010 Thomas Hochstein <thh@inter.net>
+
+This program is free software; you may redistribute it and/or modify it
+under the same terms as Perl itself.
+
+=cut
