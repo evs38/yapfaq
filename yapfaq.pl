@@ -79,7 +79,7 @@ foreach (@Config) {
     }
     close FH;
   } else { 
-    warn "Couldn't open $File.cfg: $!\n";
+    warn "$0: W: Couldn't open $File.cfg: $!\n";
   }
 
   $SupersedeMID = "" unless $Supersede;
@@ -105,7 +105,7 @@ sub readconfig{
   my ($File, $Config) = @_;
   my ($LastEntry, $Error, $i) = ('','',0);
 
-  open FH, "<$$File" or die "$0: Can't open $$File: $!";
+  open FH, "<$$File" or die "$0: E: Can't open $$File: $!";
   while (<FH>) {
     if (/^(\s*(\S+)\s*=\s*'?(.*?)'?\s*(#.*$|$)|^(.*?)'?\s*(#.*$|$))/ && not /^\s*$/) {
       $LastEntry = lc($2) if $2;
@@ -121,16 +121,16 @@ sub readconfig{
   #Check saved values:
   for $i (0..$i){
     unless($$Config[$i]{'from'} =~ /\S+\@(\S+\.)?\S{2,}\.\S{2,}/) {
-      $Error .= "The From-header for your project \"$$Config[$i]{'name'}\" seems to be incorrect.\n"
+      $Error .= "E: The From-header for your project \"$$Config[$i]{'name'}\" seems to be incorrect.\n"
     }
     unless($$Config[$i]{'ngs'} =~ /^\S+$/) {
-      $Error .= "The Newsgroups-header for your project \"$$Config[$i]{'name'}\" contains whitespaces.\n"
+      $Error .= "E: The Newsgroups-header for your project \"$$Config[$i]{'name'}\" contains whitespaces.\n"
     }
     unless(!$$Config[$i]{'fup2'} || $$Config[$i]{'fup2'} =~ /^\S+$/) {
-      $Error .= "The Followup-To-header for your project \"$$Config[$i]{'name'}\" contains whitespaces.\n"
+      $Error .= "E: The Followup-To-header for your project \"$$Config[$i]{'name'}\" contains whitespaces.\n"
     }
     unless($$Config[$i]{'posting-frequency'} =~ /^\s*\d+\s*[dwmy]\s*$/) {
-      $Error .= "The Posting-frequency for your project \"$$Config[$i]{'name'}\" is invalid.\n"
+      $Error .= "E: The Posting-frequency for your project \"$$Config[$i]{'name'}\" is invalid.\n"
     }
     $Error .= "-" x 25 . "\n" if $Error;
   }
@@ -215,7 +215,7 @@ sub postfaq {
   
   post(\@Article);
 
-  open (FH, ">$$File.cfg") or die "$0: Can't open $$File.cfg: $!";
+  open (FH, ">$$File.cfg") or die "$0: E: Can't open $$File.cfg: $!";
   print FH "##;; Lastpost: $day.$month.$year\n";
   print FH "##;; LastMID: $MID\n";
   close FH;
@@ -230,7 +230,7 @@ sub post {
   my ($ArticleR) = @_;
 
   my $NewsConnection = Net::NNTP->new($NNTPServer, Reader => 1)
-    or die "Can't connect to news server $NNTPServer!\n";
+    or die "$0: E: Can't connect to news server '$NNTPServer'!\n";
 
   $NewsConnection->authinfo ($NNTPUser, $NNTPPass);
   $NewsConnection->post();
@@ -262,7 +262,7 @@ sub getpgpcommand {
 
   if ($PGPVersion eq '2') {
     if ($PathtoPGPPass && !$PGPPass) {
-      open (PGPPW, $PathtoPGPPass) or die "Can't open $PathtoPGPPass: $!";
+      open (PGPPW, $PathtoPGPPass) or die "$0: E: Can't open $PathtoPGPPass: $!";
       $PGPPass = <PGPPW>;
       close PGPPW;
     }
@@ -270,22 +270,22 @@ sub getpgpcommand {
     if ($PGPPass) {
       $PGPCommand = "PGPPASS=\"".$PGPPass."\" ".$pgp." -u \"".$PGPSigner."\" +verbose=0 language='en' -saft <".$pgptmpf.".txt >".$pgptmpf.".txt.asc";
     } else {
-      die "$0: PGP-Passphrase is unknown!\n";
+      die "$0: E: PGP-Passphrase is unknown!\n";
     }
   } elsif ($PGPVersion eq '5') {
     if ($PathtoPGPPass) {
       $PGPCommand = "PGPPASSFD=2 ".$pgp."s -u \"".$PGPSigner."\" -t --armor -o ".$pgptmpf.".txt.asc -z -f < ".$pgptmpf.".txt 2<".$PathtoPGPPass;
     } else {
-      die "$0: PGP-Passphrase is unknown!\n";
+      die "$0: E: PGP-Passphrase is unknown!\n";
     }
   } elsif ($PGPVersion =~ m/GPG/io) {
     if ($PathtoPGPPass) {
       $PGPCommand = $pgp." --digest-algo MD5 -a -u \"".$PGPSigner."\" -o ".$pgptmpf.".txt.asc --no-tty --batch --passphrase-fd 2 2<".$PathtoPGPPass." --clearsign ".$pgptmpf.".txt";
     } else {
-      die "$0: Passphrase is unknown!\n";
+      die "$0: E: Passphrase is unknown!\n";
     }
   } else {
-    die "$0: Unknown PGP-Version $PGPVersion!";
+    die "$0: E: Unknown PGP-Version $PGPVersion!";
   }
   return $PGPCommand;
 }
@@ -334,31 +334,31 @@ sub signpgp {
     }
   }
 
-  open(FH, ">" . $pgptmpf . ".txt") or die "$0: can't open $pgptmpf: $!\n";
+  open(FH, ">" . $pgptmpf . ".txt") or die "$0: E: can't open $pgptmpf: $!\n";
   print FH $pgphead, "\n", $pgpbody;
   print FH "\n" if ($PGPVersion =~ m/GPG/io);	# workaround a pgp/gpg incompatibility - should IMHO be fixed in pgpverify
-  close(FH) or warn "$0: Couldn't close TMP: $!\n";
+  close(FH) or warn "$0: W: Couldn't close TMP: $!\n";
 
   # Start PGP, then read the signature;
   my $PGPCommand = getpgpcommand($PGPVersion);
   `$PGPCommand`;
 
-  open (FH, "<" . $pgptmpf . ".txt.asc") or die "$0: can't open ".$pgptmpf.".txt.asc: $!\n";
+  open (FH, "<" . $pgptmpf . ".txt.asc") or die "$0: E: can't open ".$pgptmpf.".txt.asc: $!\n";
   $/ = "$pgpbegin\n";
   $_ = <FH>;
   unless (m/\Q$pgpbegin\E$/o) {
 #    unlink $pgptmpf . ".txt";
 #    unlink $pgptmpf . ".txt.asc";
-    die "$0: $pgpbegin not found in ".$pgptmpf.".txt.asc\n"
+    die "$0: E: $pgpbegin not found in ".$pgptmpf.".txt.asc\n"
   }
-  unlink($pgptmpf . ".txt") or warn "$0: Couldn't unlink $pgptmpf.txt: $!\n";
+  unlink($pgptmpf . ".txt") or warn "$0: W: Couldn't unlink $pgptmpf.txt: $!\n";
 
   $/ = "\n";
   $_ = <FH>;
   unless (m/^Version: (\S+)(?:\s(\S+))?/o) {
     unlink $pgptmpf . ".txt";
     unlink $pgptmpf . ".txt.asc";
-    die "$0: didn't find PGP Version line where expected.\n";
+    die "$0: E: didn't find PGP Version line where expected.\n";
   }
   
   if (defined($2)) {
@@ -383,7 +383,7 @@ sub signpgp {
   unless (eof(FH)) {
     unlink $pgptmpf . ".txt";
     unlink $pgptmpf . ".txt.asc";
-    die "$0: unexpected data following $pgpend\n";
+    die "$0: E: unexpected data following $pgpend\n";
   }
   close(FH);
   unlink "$pgptmpf.txt.asc";
