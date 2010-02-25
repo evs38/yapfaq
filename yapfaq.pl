@@ -14,7 +14,7 @@
 
 my $Version = "0.6-unreleased";
 
-my $NNTPServer = "";
+my $NNTPServer = "localhost";
 my $NNTPUser = "";
 my $NNTPPass = "";
 my $Sender = "";
