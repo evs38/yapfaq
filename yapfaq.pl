@@ -64,7 +64,7 @@ foreach (@Config) {
   my ($NPY,$NPM,$NPD);                   #NP: Next posting-date
   my $SupersedeMID;
   
-  my ($ActName,$File,$PFreq) =($$_{'name'},$$_{'file'},$$_{'posting-frequency'});
+  my ($ActName,$File,$PFreq,$Expire) =($$_{'name'},$$_{'file'},$$_{'posting-frequency'},$$_{'expires'});
   my ($From,$Subject,$NG,$Fup2)=($$_{'from'},$$_{'subject'},$$_{'ngs'},$$_{'fup2'});
   my ($MIDF,$ReplyTo,$ExtHea)=($$_{'mid-format'},$$_{'reply-to'},$$_{'extraheader'});
   my ($Supersede)            =($$_{'supersede'});
@@ -84,14 +84,10 @@ foreach (@Config) {
 
   $SupersedeMID = "" unless $Supersede;
 
-  if ($PFreq =~ /(\d+)\s*([dw])/) { # Is counted in days or weeks: Use Add_Delta_Days.
-    ($NPY,$NPM,$NPD) = Add_Delta_Days($LPY, $LPM, $LPD, (($2 eq "w")?$1 * 7: $1 * 1));
-  } elsif ($PFreq =~ /(\d+)\s*([my])/) { #Is counted in months or years: Use Add_Delta_YM
-    ($NPY,$NPM,$NPD) = Add_Delta_YM($LPY, $LPM, $LPD, (($2 eq "m")?(0,$1):($1,0)));
-  }
-    
+  ($NPY,$NPM,$NPD) = calcdelta ($LPY,$LPM,$LPD,$PFreq);
+
   if (Delta_Days($NPY,$NPM,$NPD,$TDY,$TDM,$TDD) >= 0 ) {
-    postfaq(\$ActName,\$File,\$From,\$Subject,\$NG,\$Fup2,\$MIDF,\$ExtHea,\$Sender,\$TDY,\$TDM,\$TDD,\$ReplyTo,\$SupersedeMID);
+    postfaq(\$ActName,\$File,\$From,\$Subject,\$NG,\$Fup2,\$MIDF,\$ExtHea,\$Sender,\$TDY,\$TDM,\$TDD,\$ReplyTo,\$SupersedeMID,\$Expire);
   }
 }
 
@@ -132,18 +128,38 @@ sub readconfig{
     unless($$Config[$i]{'posting-frequency'} =~ /^\s*\d+\s*[dwmy]\s*$/) {
       $Error .= "E: The Posting-frequency for your project \"$$Config[$i]{'name'}\" is invalid.\n"
     }
+    unless($$Config[$i]{'expires'} =~ /^\s*\d+\s*[dwmy]\s*$/) {
+      $$Config[$i]{'expires'} = '3m'; # set default: 3 month
+	  warn "$0: W: The Expires for your project \"$$Config[$i]{'name'}\" is invalid - set to 3 month.\n";
+    }
     $Error .= "-" x 25 . "\n" if $Error;
   }
   die $Error if $Error;
 }
 
+################################# calcdelta #################################
+# Takes a date (year,  month and day) and a time period (1d, 1w, 1m, 1y, ...)
+# and adds the latter to the former
+
+sub calcdelta {
+  my ($Year, $Month, $Day, $Period) = @_;
+  my ($NYear, $NMonth, $NDay);
+
+  if ($Period =~ /(\d+)\s*([dw])/) { # Is counted in days or weeks: Use Add_Delta_Days.
+    ($NYear, $NMonth, $NDay) = Add_Delta_Days($Year, $Month, $Day, (($2 eq "w")?$1 * 7: $1 * 1));
+  } elsif ($Period =~ /(\d+)\s*([my])/) { #Is counted in months or years: Use Add_Delta_YM
+    ($NYear, $NMonth, $NDay) = Add_Delta_YM($Year, $Month, $Day, (($2 eq "m")?(0,$1):($1,0)));
+  }
+  return ($NYear, $NMonth, $NDay);
+}
+  
 ################################## postfaq ##################################
 # Takes a filename and many other vars.
 #
 # It reads the data-file $File and then posts the article.
 
 sub postfaq {
-  my ($ActName,$File,$From,$Subject,$NG,$Fup2,$MIDF,$ExtraHeaders,$Sender,$TDY,$TDM,$TDD,$ReplyTo,$Supersedes) = @_;
+  my ($ActName,$File,$From,$Subject,$NG,$Fup2,$MIDF,$ExtraHeaders,$Sender,$TDY,$TDM,$TDD,$ReplyTo,$Supersedes,$Expire) = @_;
   my (@Header,@Body,$MID,$InRealBody,$LastModified);
 
   #Prepare MID:
@@ -181,12 +197,12 @@ sub postfaq {
   my $year = (1900 + $time[5]);
   my $tz = $time[8] ? " +0200" : " +0100";
   
-  my ($expY,$expM,$expD) = Add_Delta_YM($year, $month, $day, 0, 3);
+  my ($expY,$expM,$expD) = calcdelta ($year,$month,$day,$$Expire);
   my $expmonthN = ("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")[$expM-1];
 
   my $date = "$day $monthN $year " . $hh . ":" . $mm . ":" . $ss . $tz;
   my $expdate = "$expD $expmonthN $expY $hh:$mm:$ss$tz";
-
+ 
   #Replace %LM by the content of the news.answer-pseudo-header Last-modified:
   if ($LastModified) {
     $$Subject =~ s/\%LM/$LastModified/;
