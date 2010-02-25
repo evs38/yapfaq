@@ -1,3 +1,63 @@
+Version 0.6
+
+* Add documentation in POD format.
+  Thomas Hochstein <thh@inter.net> Thu Feb 25 17:00:07 2010 +0100
+
+* Add commandline options.
+  - Using Getopt::Std.
+  - Implement option '-h':
+    Display version and usage information.
+  - Implement option '-v':
+    Print progress information to STDOUT on reading the configuration,
+    skipping a FAQ, preparing it for posting, posting it and writing
+    status information to disk.
+  - Implement option '-f':
+    Limit operation to the given project name. Skip parsing all other
+    information from yapfaq.cfg, skip posting all other FAQs.
+  - Add option '-d':
+    'dry run', simulation mode: nothing is posted.
+  - Add option '-p':
+    'post anyway', files are unconditionally posted irrespective of
+    Posting-Frequency settings.
+  - Add option '-t <newsgroups>':
+    'test mode', post to (an)other newsgroup(s) given on the command
+    line or to STDOUT ('console').
+  Thomas Hochstein <thh@inter.net> Thu Feb 25 19:22:15 2010 +0100
+
+* Add variable expiry.
+  - New Function: calcdelta
+    Move date calculation for new posting date to
+    calcdelta.
+  - Add 'Expires' to yapfaq.cfg
+    Parse 'Expires'.
+    Use calcdelta to calculate expiry.
+  Thomas Hochstein <thh@inter.net> Thu Feb 25 12:55:04 2010 +0100
+
+* Cleanup on yapfaq.cfg
+  Reformat, translate to English language, add descriptions.
+  Thomas Hochstein <thh@inter.net> Thu Feb 25 16:16:49 2010 +0100
+
+* Change handling of warnings/errors.
+  Don't output line number if .cfg file can't be opened.
+  Inform user when writing to ERROR.dat.
+  Add script name and Warning/Error to warn() and die() output.
+  Thomas Hochstein <thh@inter.net> Thu Feb 25 09:23:14 2010 +0100
+
+* Fix: Accept case-insensitive Last-modified pseudo header.
+  Thomas Hochstein <thh@inter.net> Sun Feb 21 18:39:05 2010 +0100
+
+* Change defaults
+  Don't use PGP by default.
+  Default $NNTPServer to 'localhost'
+  Thomas Hochstein <thh@inter.net> Thu Feb 25 15:15:57 2010 +0100
+
+* Update header/introduction, bump version/copyright information.
+  Fix typo/language in header/introduction.
+  Add new author / copyright information.
+  Bump version to 0.6-unreleased.
+  Thomas Hochstein <thh@inter.net> Sun Feb 21 18:51:39 2010 +0100
+
+
 Version 0.5a
 
 - Fixed bug in readconfig().
