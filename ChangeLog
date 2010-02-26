@@ -1,3 +1,10 @@
+Version 0.6.1
+
+* Fix: Test mode must not update status information.
+  Also fix runtime warning concerning expires.
+  Thomas Hochstein <thh@inter.net> Fri Feb 26 08:28:06 2010 +0100
+
+  
 Version 0.6
 
 * Add documentation in POD format.
