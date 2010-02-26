@@ -151,7 +151,7 @@ sub readconfig{
     unless($$Config[$i]{'posting-frequency'} =~ /^\s*\d+\s*[dwmy]\s*$/) {
       $Error .= "E: The Posting-frequency for your project \"$$Config[$i]{'name'}\" is invalid.\n"
     }
-    unless($$Config[$i]{'expires'} =~ /^\s*\d+\s*[dwmy]\s*$/) {
+    unless(!$$Config[$i]{'expires'} || $$Config[$i]{'expires'} =~ /^\s*\d+\s*[dwmy]\s*$/) {
       $$Config[$i]{'expires'} = '3m'; # set default: 3 month
 	  warn "$0: W: The Expires for your project \"$$Config[$i]{'name'}\" is invalid - set to 3 month.\n";
     }
@@ -265,6 +265,9 @@ sub postfaq {
     print "$$ActName: Posting article ...\n";
   }
   post(\@Article);
+
+  # Test mode?
+  return if($Options{'t'});
 
   if($Options{'v'}) {
     print "$$ActName: Save status information.\n";
