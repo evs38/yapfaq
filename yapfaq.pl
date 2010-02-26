@@ -152,7 +152,6 @@ sub readconfig{
       $Error .= "E: The Posting-frequency for your project \"$$Config[$i]{'name'}\" is invalid.\n"
     }
     unless(!$$Config[$i]{'expires'} || $$Config[$i]{'expires'} =~ /^\s*\d+\s*[dwmy]\s*$/) {
-      $$Config[$i]{'expires'} = '3m'; # set default: 3 month
 	  warn "$0: W: The Expires for your project \"$$Config[$i]{'name'}\" is invalid - set to 3 month.\n";
     }
     $Error .= "-" x 25 . "\n" if $Error;
@@ -223,7 +222,9 @@ sub postfaq {
   my $wday = ("Sun","Mon","Tue","Wed","Thu","Fri","Sat")[$time[6]];
   my $year = (1900 + $time[5]);
   my $tz = $time[8] ? " +0200" : " +0100";
-  
+
+  $$Expire = '3m' if !$$Expire; # set default if unset: 3 month
+
   my ($expY,$expM,$expD) = calcdelta ($year,$month,$day,$$Expire);
   my $expmonthN = ("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")[$expM-1];
 
