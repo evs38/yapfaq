@@ -12,7 +12,7 @@
 # It can be redistributed and/or modified under the same terms under 
 # which Perl itself is published.
 
-my $Version = "0.6.1";
+my $Version = "0.6.2";
 
 my $NNTPServer = "localhost";
 my $NNTPUser = "";

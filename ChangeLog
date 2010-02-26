@@ -1,3 +1,10 @@
+Version 0.6.2
+
+* Fix default for Expires.
+  Bug introduced in v0.6.1.
+  Thomas Hochstein <thh@inter.net> Fri Feb 26 09:29:01 2010 +0100
+
+
 Version 0.6.1
 
 * Fix: Test mode must not update status information.
