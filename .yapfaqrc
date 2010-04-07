@@ -1,0 +1,17 @@
+NNTPServer = 'localhost'
+NNTPUser   = ''
+NNTPPass   = ''
+Sender     = ''
+ConfigFile = 'yapfaq.cfg'
+UsePGP     = 0
+
+################################## PGP-Config #################################
+pgp           = '/usr/bin/pgp'                  # path to pgp
+PGPVersion    = '2'                             # Use 2 for 2.X 5 for PGP > 2.X and GPG for GPG
+PGPSigner     = ''                              # sign as who?
+PGPPass       = ''                              # pgp2 only
+PathtoPGPPass = ''                           # pgp2 pgp5 and gpg
+pgpbegin      = '-----BEGIN PGP SIGNATURE-----' # Begin of PGP-Signature
+pgpend        = '-----END PGP SIGNATURE-----'   # End of PGP-Signature
+pgptmpf       = 'pgptmp'                        # temporary file for PGP.
+pgpheader     = 'X-PGP-Sig'
