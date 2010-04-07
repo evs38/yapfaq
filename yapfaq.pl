@@ -14,27 +14,23 @@
 
 my $Version = "0.6.2";
 
-my $NNTPServer = "localhost";
-my $NNTPUser = "";
-my $NNTPPass = "";
-my $Sender = "";
-my $ConfigFile = "yapfaq.cfg";
-my $UsePGP = 0;
+my %Config = (NNTPServer => "localhost",
+              NNTPUser   => "",
+              NNTPPass   => "",
+              Sender     => "",
+              ConfigFile => "yapfaq.cfg",
+              UsePGP     => 0,
 
-################################## PGP-Config #################################
-
-my $pgp	          = '/usr/bin/pgp';            # path to pgp
-my $PGPVersion    = '2';                       # Use 2 for 2.X, 5 for PGP > 2.X and GPG for GPG
-
-my $PGPSigner     = '';                        # sign as who?
-my $PGPPass       = '';                        # pgp2 only
-my $PathtoPGPPass = '';	                       # pgp2, pgp5 and gpg
-
-
-my $pgpbegin  ='-----BEGIN PGP SIGNATURE-----';# Begin of PGP-Signature
-my $pgpend    ='-----END PGP SIGNATURE-----';  # End of PGP-Signature
-my $pgptmpf   ='pgptmp';                       # temporary file for PGP.
-my $pgpheader ='X-PGP-Sig';
+              ################################## PGP-Config #################################
+              pgp           => '/usr/bin/pgp',                  # path to pgp
+              PGPVersion    => '2',                             # Use 2 for 2.X, 5 for PGP > 2.X and GPG for GPG
+              PGPSigner     => '',                              # sign as who?
+              PGPPass       => '',                              # pgp2 only
+              PathtoPGPPass => '',                              # pgp2, pgp5 and gpg
+              pgpbegin      => '-----BEGIN PGP SIGNATURE-----', # Begin of PGP-Signature
+              pgpend        => '-----END PGP SIGNATURE-----',   # End of PGP-Signature
+              pgptmpf       => 'pgptmp',                        # temporary file for PGP.
+              pgpheader     => 'X-PGP-Sig');
 
 my @PGPSignHeaders = ('From', 'Newsgroups', 'Subject', 'Control',
 	'Supersedes', 'Followup-To', 'Date', 'Sender', 'Approved',
@@ -77,7 +73,7 @@ my ($Faq) = $Options{'f'} if ($Options{'f'});
 
 # read configuration (configured FAQs)
 my @Config;
-readconfig (\$ConfigFile, \@Config, \$Faq);
+readconfig (\$Config{'ConfigFile'}, \@Config, \$Faq);
 
 # for each FAQ:
 # - parse configuration
@@ -119,7 +115,7 @@ foreach (@Config) {
     if($Options{'d'}) {
 	  print "$ActName: Would be posted now (but running in simulation mode [$0 -d]).\n" if $Options{'v'};
 	} else {
-      postfaq(\$ActName,\$File,\$From,\$Subject,\$NG,\$Fup2,\$MIDF,\$ExtHea,\$Sender,\$TDY,\$TDM,\$TDD,\$ReplyTo,\$SupersedeMID,\$Expire);
+      postfaq(\$ActName,\$File,\$From,\$Subject,\$NG,\$Fup2,\$MIDF,\$ExtHea,\$Config{'Sender'},\$TDY,\$TDM,\$TDD,\$ReplyTo,\$SupersedeMID,\$Expire);
 	}
   } elsif($Options{'v'}) {
     print "$ActName: Nothing to do.\n";
@@ -287,7 +283,7 @@ sub postfaq {
   }
 
   # sign article if $UsePGP is true
-  my @Article = ($UsePGP)?@{signpgp(\@Header, \@Body)}:(@Header, "\n", @Body);
+  my @Article = ($Config{'UsePGP'})?@{signpgp(\@Header, \@Body)}:(@Header, "\n", @Body);
   
   # post article
   print "$$ActName: Posting article ...\n" if($Options{'v'});
@@ -329,10 +325,8 @@ sub post {
     return;
   }
 
-  my $NewsConnection = Net::NNTP->new($NNTPServer, Reader => 1)
-    or die "$0: E: Can't connect to news server '$NNTPServer'!\n";
-
-  $NewsConnection->authinfo ($NNTPUser, $NNTPPass) if (defined($NNTPUser));
+  my $NewsConnection = Net::NNTP->new($Config{'NNTPServer'}, Reader => 1)    or die "$0: E: Can't connect to news server '$Config{'NNTPServer'}'!\n";
+  $NewsConnection->authinfo ($Config{'NNTPUser'}, $Config{'NNTPPass'}) if (defined($Config{'NNTPUser'}));
   $NewsConnection->post();
   $NewsConnection->datasend (@$ArticleR);
   $NewsConnection->dataend();
@@ -362,26 +356,26 @@ sub getpgpcommand {
   my $PGPCommand;
 
   if ($PGPVersion eq '2') {
-    if ($PathtoPGPPass && !$PGPPass) {
-      open (PGPPW, $PathtoPGPPass) or die "$0: E: Can't open $PathtoPGPPass: $!";
-      $PGPPass = <PGPPW>;
+    if ($Config{'PathtoPGPPass'} && !$Config{'PGPPass'}) {
+      open (PGPPW, $Config{'PathtoPGPPass'}) or die "$0: E: Can't open $Config{'PathtoPGPPass'}: $!";
+      Config{'$PGPPass'} = <PGPPW>;
       close PGPPW;
     }
   
-    if ($PGPPass) {
-      $PGPCommand = "PGPPASS=\"".$PGPPass."\" ".$pgp." -u \"".$PGPSigner."\" +verbose=0 language='en' -saft <".$pgptmpf.".txt >".$pgptmpf.".txt.asc";
+    if (Config{'$PGPPass'}) {
+      $PGPCommand = "PGPPASS=\"".$Config{'PGPPass'}."\" ".$Config{'pgp'}." -u \"".$Config{'PGPSigner'}."\" +verbose=0 language='en' -saft <".$Config{'pgptmpf'}.".txt >".$Config{'pgptmpf'}.".txt.asc";
     } else {
       die "$0: E: PGP-Passphrase is unknown!\n";
     }
   } elsif ($PGPVersion eq '5') {
-    if ($PathtoPGPPass) {
-      $PGPCommand = "PGPPASSFD=2 ".$pgp."s -u \"".$PGPSigner."\" -t --armor -o ".$pgptmpf.".txt.asc -z -f < ".$pgptmpf.".txt 2<".$PathtoPGPPass;
+    if ($Config{'PathtoPGPPass'}) {
+      $PGPCommand = "PGPPASSFD=2 ".$Config{'pgp'}."s -u \"".$Config{'PGPSigner'}."\" -t --armor -o ".$Config{'pgptmpf'}.".txt.asc -z -f < ".$Config{'pgptmpf'}.".txt 2<".$Config{'PathtoPGPPass'};
     } else {
       die "$0: E: PGP-Passphrase is unknown!\n";
     }
   } elsif ($PGPVersion =~ m/GPG/io) {
-    if ($PathtoPGPPass) {
-      $PGPCommand = $pgp." --digest-algo MD5 -a -u \"".$PGPSigner."\" -o ".$pgptmpf.".txt.asc --no-tty --batch --passphrase-fd 2 2<".$PathtoPGPPass." --clearsign ".$pgptmpf.".txt";
+    if (Config{'$PathtoPGPPass'}) {
+      $PGPCommand = $Config{'pgp'}." --digest-algo MD5 -a -u \"".$Config{'PGPSigner'}."\" -o ".$Config{'pgptmpf'}.".txt.asc --no-tty --batch --passphrase-fd 2 2<".$Config{'PathtoPGPPass'}." --clearsign ".$Config{'pgptmpf'}.".txt";
     } else {
       die "$0: E: Passphrase is unknown!\n";
     }
@@ -424,8 +418,8 @@ sub signpgp {
   $pgpbody = join ("", @$BodyR);
 
   # Delete and create the temporary pgp-Files
-  unlink "$pgptmpf.txt";
-  unlink "$pgptmpf.txt.asc";
+  unlink "$Config{'pgptmpf'}.txt";
+  unlink "$Config{'pgptmpf'}.txt.asc";
   $signheaders = join(",", @signheaders);
 
   $pgphead = "X-Signed-Headers: $signheaders\n";
@@ -435,37 +429,37 @@ sub signpgp {
     }
   }
 
-  open(FH, ">" . $pgptmpf . ".txt") or die "$0: E: can't open $pgptmpf: $!\n";
+  open(FH, ">" . $Config{'pgptmpf'} . ".txt") or die "$0: E: can't open $Config{'pgptmpf'}: $!\n";
   print FH $pgphead, "\n", $pgpbody;
-  print FH "\n" if ($PGPVersion =~ m/GPG/io);	# workaround a pgp/gpg incompatibility - should IMHO be fixed in pgpverify
+  print FH "\n" if ($Config{'PGPVersion'} =~ m/GPG/io);	# workaround a pgp/gpg incompatibility - should IMHO be fixed in pgpverify
   close(FH) or warn "$0: W: Couldn't close TMP: $!\n";
 
   # Start PGP, then read the signature;
-  my $PGPCommand = getpgpcommand($PGPVersion);
+  my $PGPCommand = getpgpcommand($Config{'PGPVersion'});
   `$PGPCommand`;
 
-  open (FH, "<" . $pgptmpf . ".txt.asc") or die "$0: E: can't open ".$pgptmpf.".txt.asc: $!\n";
-  $/ = "$pgpbegin\n";
+  open (FH, "<" . $Config{'pgptmpf'} . ".txt.asc") or die "$0: E: can't open ".$Config{'pgptmpf'}.".txt.asc: $!\n";
+  $/ = "$Config{'pgpbegin'}\n";
   $_ = <FH>;
-  unless (m/\Q$pgpbegin\E$/o) {
-#    unlink $pgptmpf . ".txt";
-#    unlink $pgptmpf . ".txt.asc";
-    die "$0: E: $pgpbegin not found in ".$pgptmpf.".txt.asc\n"
+  unless (m/\Q$Config{'pgpbegin'}\E$/o) {
+#    unlink $Config{'pgptmpf'} . ".txt";
+#    unlink $Config{'pgptmpf'} . ".txt.asc";
+    die "$0: E: $Config{'pgpbegin'} not found in ".$Config{'pgptmpf'}.".txt.asc\n"
   }
-  unlink($pgptmpf . ".txt") or warn "$0: W: Couldn't unlink $pgptmpf.txt: $!\n";
+  unlink($Config{'pgptmpf'} . ".txt") or warn "$0: W: Couldn't unlink $Config{'pgptmpf'}.txt: $!\n";
 
   $/ = "\n";
   $_ = <FH>;
   unless (m/^Version: (\S+)(?:\s(\S+))?/o) {
-    unlink $pgptmpf . ".txt";
-    unlink $pgptmpf . ".txt.asc";
+    unlink $Config{'pgptmpf'} . ".txt";
+    unlink $Config{'pgptmpf'} . ".txt.asc";
     die "$0: E: didn't find PGP Version line where expected.\n";
   }
   
   if (defined($2)) {
-    $$HeaderR{$pgpheader} = $1."-".$2." ".$signheaders;
+    $$HeaderR{$Config{'pgpheader'}} = $1."-".$2." ".$signheaders;
   } else {
-    $$HeaderR{$pgpheader} = $1." ".$signheaders;
+    $$HeaderR{$Config{'pgpheader'}} = $1." ".$signheaders;
   }
   
   do {          # skip other pgp headers like
@@ -474,23 +468,23 @@ sub signpgp {
 
   while (<FH>) {
     chomp;
-    last if /^\Q$pgpend\E$/;
-    $$HeaderR{$pgpheader} .= "\n\t$_";
+    last if /^\Q$Config{'pgpend'}\E$/;
+    $$HeaderR{$Config{'pgpheader'}} .= "\n\t$_";
   }
   
-  $$HeaderR{$pgpheader} .= "\n" unless ($$HeaderR{$pgpheader} =~ /\n$/s);
+  $$HeaderR{$Config{'pgpheader'}} .= "\n" unless ($$HeaderR{$Config{'pgpheader'}} =~ /\n$/s);
 
   $_ = <FH>;
   unless (eof(FH)) {
-    unlink $pgptmpf . ".txt";
-    unlink $pgptmpf . ".txt.asc";
-    die "$0: E: unexpected data following $pgpend\n";
+    unlink $Config{'pgptmpf'} . ".txt";
+    unlink $Config{'pgptmpf'} . ".txt.asc";
+    die "$0: E: unexpected data following $Config{'pgpend'}\n";
   }
   close(FH);
-  unlink "$pgptmpf.txt.asc";
+  unlink "$Config{'pgptmpf'}.txt.asc";
 
-  my $tmppgpheader = $pgpheader . ": " . $$HeaderR{$pgpheader};
-  delete $$HeaderR{$pgpheader};
+  my $tmppgpheader = $Config{'pgpheader'} . ": " . $$HeaderR{$Config{'pgpheader'}};
+  delete $$HeaderR{$Config{'pgpheader'}};
 
   @pgphead = ();
   foreach $header (@PGPorderheaders) {
@@ -507,7 +501,7 @@ sub signpgp {
     }
   }
 
-  push @pgphead, ("X-PGP-Key: " . $PGPSigner . "\n"), $tmppgpheader;
+  push @pgphead, ("X-PGP-Key: " . $Config{'PGPSigner'} . "\n"), $tmppgpheader;
   undef $tmppgpheader;
 
   @pgpbody = split /$/m, $pgpbody;
