@@ -118,9 +118,7 @@ sub readconfig{
   my ($File, $Config, $Faq) = @_;
   my ($LastEntry, $Error, $i) = ('','',0);
 
-  if($Options{'v'}) {
-    print "Reading configuration.\n";
-  }
+  print "Reading configuration.\n" if($Options{'v'});
 
   open FH, "<$$File" or die "$0: E: Can't open $$File: $!";
   while (<FH>) {
@@ -184,9 +182,7 @@ sub postfaq {
   my ($ActName,$File,$From,$Subject,$NG,$Fup2,$MIDF,$ExtraHeaders,$Sender,$TDY,$TDM,$TDD,$ReplyTo,$Supersedes,$Expire) = @_;
   my (@Header,@Body,$MID,$InRealBody,$LastModified);
 
-  if($Options{'v'}) {
-    print "$$ActName: Preparing to post.\n";
-  }
+  print "$$ActName: Preparing to post.\n" if($Options{'v'});
   
   #Prepare MID:
   $$TDM = ($$TDM < 10 && $$TDM !~ /^0/) ? "0" . $$TDM : $$TDM;
@@ -262,17 +258,13 @@ sub postfaq {
 
   my @Article = ($UsePGP)?@{signpgp(\@Header, \@Body)}:(@Header, "\n", @Body);
   
-  if($Options{'v'}) {
-    print "$$ActName: Posting article ...\n";
-  }
+  print "$$ActName: Posting article ...\n" if($Options{'v'});
   post(\@Article);
 
   # Test mode?
   return if($Options{'t'});
 
-  if($Options{'v'}) {
-    print "$$ActName: Save status information.\n";
-  }
+  print "$$ActName: Save status information.\n" if($Options{'v'});
 
   open (FH, ">$$File.cfg") or die "$0: E: Can't open $$File.cfg: $!";
   print FH "##;; Lastpost: $day.$month.$year\n";
