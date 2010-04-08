@@ -61,7 +61,7 @@ my ($TDY, $TDM, $TDD) = Today(); #TD: Today's date
 my %Options;
 getopts('hvpdt:f:', \%Options);
 if ($Options{'h'}) {
-  print "$0 v $Version\nUsage: $0 [-hvpd] [-t <newsgroups>] [-f <faq>]\n";
+  exec ('perldoc', $0);
   exit(0);
 };
 my ($Faq) = $Options{'f'} if ($Options{'f'});
@@ -697,7 +697,7 @@ was posted and the second being the message ID of that incarnation.
 
 =item B<-h> (help)
 
-Print out version and usage information on B<yapfaq> and exit.
+Print this man page and exit.
 
 =item B<-v> (verbose)
 
