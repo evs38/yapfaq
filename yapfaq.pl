@@ -59,7 +59,12 @@ use Getopt::Std;
 my ($TDY, $TDM, $TDD) = Today(); #TD: Today's date
 
 my %Options;
-getopts('hvpdt:f:', \%Options);
+getopts('Vhvpdt:f:', \%Options);
+if ($Options{'V'}) {
+  print "$0 v $Version\nCopyright (c) 2003 Marc Brockschmidt <marc\@marcbrockschmidt.de>\nCopyright (c) 2010 Thomas Hochstein <thh\@inter.net>\n";
+  print "This program is free software; you may redistribute it and/or modify it under the same terms as Perl itself.\n";
+  exit(0);
+}
 if ($Options{'h'}) {
   exec ('perldoc', $0);
   exit(0);
@@ -694,6 +699,10 @@ was posted and the second being the message ID of that incarnation.
 =head1 OPTIONS
 
 =over 3
+
+=item B<-V> (version)
+
+Print out version and copyright information on B<yapfaq> and exit.
 
 =item B<-h> (help)
 
