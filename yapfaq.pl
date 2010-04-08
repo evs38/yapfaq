@@ -138,16 +138,25 @@ sub readconfig{
   #Check saved values:
   for $i (0..$i){
     next if (defined($$Faq) && defined($$Config[$i]{'name'}) && $$Config[$i]{'name'} ne $$Faq );
-    unless($$Config[$i]{'from'} =~ /\S+\@(\S+\.)?\S{2,}\.\S{2,}/) {
-      $Error .= "E: The From-header for your project \"$$Config[$i]{'name'}\" seems to be incorrect.\n"
+    unless(defined($$Config[$i]{'name'}) && $$Config[$i]{'name'} =~ /^\S+$/) {
+      $Error .= "E: The name of your project \"$$Config[$i]{'name'}\" is not defined or contains whitespaces.\n"
     }
-    unless($$Config[$i]{'ngs'} =~ /^\S+$/) {
-      $Error .= "E: The Newsgroups-header for your project \"$$Config[$i]{'name'}\" contains whitespaces.\n"
+    unless(defined($$Config[$i]{'file'}) && -f $$Config[$i]{'file'}) {
+      $Error .= "E: The file to post for your project \"$$Config[$i]{'name'}\" is not defined or does not exist.\n"
+    }
+    unless(defined($$Config[$i]{'from'}) && $$Config[$i]{'from'} =~ /\S+\@(\S+\.)?\S{2,}\.\S{2,}/) {
+      $Error .= "E: The From header for your project \"$$Config[$i]{'name'}\" seems to be incorrect.\n"
+    }
+    unless(defined($$Config[$i]{'ngs'}) && $$Config[$i]{'ngs'} =~ /^\S+$/) {
+      $Error .= "E: The Newsgroups header for your project \"$$Config[$i]{'name'}\" is not defined or contains whitespaces.\n"
+    }
+    unless(defined($$Config[$i]{'subject'})) {
+      $Error .= "E: The Subject header for your project \"$$Config[$i]{'name'}\" is not defined.\n"
     }
     unless(!$$Config[$i]{'fup2'} || $$Config[$i]{'fup2'} =~ /^\S+$/) {
-      $Error .= "E: The Followup-To-header for your project \"$$Config[$i]{'name'}\" contains whitespaces.\n"
+      $Error .= "E: The Followup-To header for your project \"$$Config[$i]{'name'}\" contains whitespaces.\n"
     }
-    unless($$Config[$i]{'posting-frequency'} =~ /^\s*\d+\s*[dwmy]\s*$/) {
+    unless(defined($$Config[$i]{'posting-frequency'}) && $$Config[$i]{'posting-frequency'} =~ /^\s*\d+\s*[dwmy]\s*$/) {
       $Error .= "E: The Posting-frequency for your project \"$$Config[$i]{'name'}\" is invalid.\n"
     }
     unless(!$$Config[$i]{'expires'} || $$Config[$i]{'expires'} =~ /^\s*\d+\s*[dwmy]\s*$/) {
@@ -156,8 +165,8 @@ sub readconfig{
     unless(defined($$Config[$i]{'mid-format'}) && $$Config[$i]{'mid-format'} =~ /^<\S+\@\S{2,}\.\S{2,}>$/) {
 	  warn "$0: W: The Expires for your project \"$$Config[$i]{'name'}\" seems to be invalid - set to default.\n";
     }
-    $Error .= "-" x 25 . "\n" if $Error;
   }
+  $Error .= "-" x 25 . 'program terminated' . "-" x 25 . "\n" if $Error;
   die $Error if $Error;
 }
 
@@ -193,6 +202,7 @@ sub postfaq {
   $$TDD = ($$TDD < 10 && $$TDD !~ /^0/) ? "0" . $$TDD : $$TDD;
 
   $MID = $$MIDF;
+  $MID = '<%n-%d.%m.%y@'.hostfqdn.'>' if !defined($MID);
   $MID =~ s/\%n/$$ActName/g;
   $MID =~ s/\%d/$$TDD/g;
   $MID =~ s/\%m/$$TDM/g;
