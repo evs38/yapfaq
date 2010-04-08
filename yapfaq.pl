@@ -62,7 +62,7 @@ my ($TDY, $TDM, $TDD) = Today(); #TD: Today's date
 
 # read commandline options
 my %Options;
-getopts('Vhvpdt:f:s:', \%Options);
+getopts('Vhvpdt:f:c:s:', \%Options);
 # -V: print version / copyright information
 if ($Options{'V'}) {
   print "$0 v $Version\nCopyright (c) 2003 Marc Brockschmidt <marc\@marcbrockschmidt.de>\nCopyright (c) 2010 Thomas Hochstein <thh\@inter.net>\n";
@@ -78,7 +78,12 @@ if ($Options{'h'}) {
 my ($Faq) = $Options{'f'} if ($Options{'f'});
 
 # read runtime configuration (configuration variables)
-readrc (\$RCFile,\%Config) if -f $RCFile;
+$RCFile = $Options{'c'} if ($Options{'c'});
+if (-f $RCFile) {
+  readrc (\$RCFile,\%Config);
+} else {
+  warn "$0: W: .rc file $RCFile does not exist!\n";
+}
 
 # read configuration (configured FAQs)
 my @Config;
