@@ -52,6 +52,7 @@ my @PGPorderheaders = ('from', 'newsgroups', 'subject', 'control',
 
 use strict;
 use Net::NNTP;
+use Net::Domain qw(hostfqdn);
 use Date::Calc qw(Add_Delta_YM Add_Delta_Days Delta_Days Today);
 use Fcntl ':flock'; # import LOCK_* constants
 use Getopt::Std;
@@ -151,6 +152,9 @@ sub readconfig{
     }
     unless(!$$Config[$i]{'expires'} || $$Config[$i]{'expires'} =~ /^\s*\d+\s*[dwmy]\s*$/) {
 	  warn "$0: W: The Expires for your project \"$$Config[$i]{'name'}\" is invalid - set to 3 month.\n";
+    }
+    unless(defined($$Config[$i]{'mid-format'}) && $$Config[$i]{'mid-format'} =~ /^<\S+\@\S{2,}\.\S{2,}>$/) {
+	  warn "$0: W: The Expires for your project \"$$Config[$i]{'name'}\" seems to be invalid - set to default.\n";
     }
     $Error .= "-" x 25 . "\n" if $Error;
   }
