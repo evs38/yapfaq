@@ -305,7 +305,7 @@ sub post {
   my $NewsConnection = Net::NNTP->new($NNTPServer, Reader => 1)
     or die "$0: E: Can't connect to news server '$NNTPServer'!\n";
 
-  $NewsConnection->authinfo ($NNTPUser, $NNTPPass);
+  $NewsConnection->authinfo ($NNTPUser, $NNTPPass) if (defined($NNTPUser));
   $NewsConnection->post();
   $NewsConnection->datasend (@$ArticleR);
   $NewsConnection->dataend();
