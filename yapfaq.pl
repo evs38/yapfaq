@@ -58,22 +58,31 @@ use Fcntl ':flock'; # import LOCK_* constants
 use Getopt::Std;
 my ($TDY, $TDM, $TDD) = Today(); #TD: Today's date
 
+# read commandline options
 my %Options;
 getopts('Vhvpdt:f:', \%Options);
+# -V: print version / copyright information
 if ($Options{'V'}) {
   print "$0 v $Version\nCopyright (c) 2003 Marc Brockschmidt <marc\@marcbrockschmidt.de>\nCopyright (c) 2010 Thomas Hochstein <thh\@inter.net>\n";
   print "This program is free software; you may redistribute it and/or modify it under the same terms as Perl itself.\n";
   exit(0);
 }
+# -h: feed myself to perldoc
 if ($Options{'h'}) {
   exec ('perldoc', $0);
   exit(0);
 };
+# -f: set $Faq
 my ($Faq) = $Options{'f'} if ($Options{'f'});
 
+# read configuration (configured FAQs)
 my @Config;
 readconfig (\$ConfigFile, \@Config, \$Faq);
 
+# for each FAQ:
+# - parse configuration
+# - read status data
+# - if FAQ is due: call postfaq()
 foreach (@Config) { 
   my ($LPD,$LPM,$LPY) = (01, 01, 0001);  #LP: Last posting-date
   my ($NPY,$NPM,$NPD);                   #NP: Next posting-date
@@ -84,8 +93,10 @@ foreach (@Config) {
   my ($MIDF,$ReplyTo,$ExtHea)=($$_{'mid-format'},$$_{'reply-to'},$$_{'extraheader'});
   my ($Supersede)            =($$_{'supersede'});
 
+  # -f: loop if not FAQ to post
   next if (defined($Faq) && $ActName ne $Faq);
 	
+  # read status data
   if (open (FH, "<$File.cfg")) {
     while(<FH>){
       if (/##;; Lastpost:\s*(\d{1,2})\.(\d{1,2})\.(\d{2}(\d{2})?)/){
@@ -103,6 +114,7 @@ foreach (@Config) {
 
   ($NPY,$NPM,$NPD) = calcdelta ($LPY,$LPM,$LPD,$PFreq);
 
+  # if FAQ is due: get it out
   if (Delta_Days($NPY,$NPM,$NPD,$TDY,$TDM,$TDD) >= 0 or ($Options{'p'})) {
     if($Options{'d'}) {
 	  print "$ActName: Would be posted now (but running in simulation mode [$0 -d]).\n" if $Options{'v'};
@@ -213,7 +225,6 @@ sub postfaq {
   $MID =~ s/\%m/$$TDM/g;
   $MID =~ s/\%y/$$TDY/g;
 
-
   #Now get the body:
   open (FH, "<$$File");
   while (<FH>){  
@@ -275,14 +286,17 @@ sub postfaq {
     push @Header, "$_\n" for (split /\n/, $$ExtraHeaders);
   }
 
+  # sign article if $UsePGP is true
   my @Article = ($UsePGP)?@{signpgp(\@Header, \@Body)}:(@Header, "\n", @Body);
   
+  # post article
   print "$$ActName: Posting article ...\n" if($Options{'v'});
   post(\@Article);
 
   # Test mode?
   return if($Options{'t'});
 
+  # otherwise: update status data
   print "$$ActName: Save status information.\n" if($Options{'v'});
 
   open (FH, ">$$File.cfg") or die "$0: E: Can't open $$File.cfg: $!";
@@ -315,6 +329,7 @@ sub post {
   $NewsConnection->datasend (@$ArticleR);
   $NewsConnection->dataend();
 
+  # Posting failed? Save to ERROR.dat
   if (!$NewsConnection->ok()) {
     open FH, ">>ERROR.dat";
     print FH "\nPosting failed! Saving to ERROR.dat. Response from news server:\n";
