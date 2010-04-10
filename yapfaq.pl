@@ -553,7 +553,7 @@ yapfaq - Post Usenet FAQs I<(yet another postfaq)>
 
 =head1 SYNOPSIS
 
-B<yapfaq> [B<-hvpd>] [B<-t> I<newsgroups> | CONSOLE] [B<-f> I<project name>] [B<-s> I<program>]
+B<yapfaq> [B<-hvpd>] [B<-t> I<newsgroups> | CONSOLE] [B<-f> I<project name>] [B<-s> I<program>] [B<-c> I<.rc file>]
 
 =head1 REQUIREMENTS
 
@@ -589,7 +589,8 @@ headers as defined in its config file (by default F<yapfaq.cfg>).
 
 F<yapfaq.cfg> consists of one or more blocks, separated by C<=====> on
 a single line, each containing the configuration for one FAQ as a set
-of definitions in the form of I<param = value>.
+of definitions in the form of I<param = value>. Everything after a "#"
+sign is ignored so you may comment your configuration file.
 
 =over 4
 
@@ -685,7 +686,7 @@ This setting is optional.
 
 =back
 
-=head2 Example configuration file
+=head3 Example configuration file
 
     # name of your project
     Name = 'testpost'
@@ -741,11 +742,100 @@ This setting is optional.
     MID-Format = '<%n-%m.%y@domain.invalid>'
     Supersede = yes
 
+=head3 Status Information
+
 Information about the last post and about how to form message IDs for
 posts is stored in a file named F<I<project name>.cfg> which will be
 generated if it does not exist. Each of those status files will
 contain two lines, the first being the date of the last time the FAQ
 was posted and the second being the message ID of that incarnation.
+
+=head2 Runtime Configuration
+
+Apart from configuring which FAQ(s) to post you may (re)set some
+runtime configuration variables via the .rcfile (by default
+F<.yapfaqrc>). F<.yapfaqrc> must contain one definition in the form of
+I<param = value> on each line; everything after a "#" sign is ignored.
+
+If you omit some settings they will be set to default values hardcoded
+in F<yapfaq.pl>.
+
+B<Please note that all parameter names are case-sensitive!>
+
+=over 4
+
+=item B<NNTPServer> = I<NNTP server> (mandatory)
+
+Host name of the NNTP server to post to. Must be set (or omitted; the
+default is "localhost"); if set to en empty string, B<yapfaq> falls
+back to Perl's build-in defaults (contents of environment variables
+NNTPSERVER and NEWSHOST; if not set, default from Net::Config; if not
+set, "news" is used).
+
+=item B<NNTPUser> = I<user name> (optional)
+
+User name used for authentication with the NNTP server (I<AUTHINFO
+USER>).
+
+This setting is optional; if it is not set, I<NNTPPass> is ignored and
+no authentication is tried.
+
+=item B<NNTPPass> = I<password> (optional)
+
+Password used for authentication with the NNTP server (I<AUTHINFO
+PASS>).
+
+This setting is optional; it must be set if I<NNTPUser> is present.
+
+=item B<Sender> = I<Sender header> (optional)
+
+The Sender header that will be added to every posted message.
+
+This setting is optional.
+
+=item B<ConfigFile> = I<configuration file> (mandatory)
+
+The configuration file defining the FAQ(s) to post. Must be set (or
+omitted; the default is "yapfaq.cfg").
+
+=item B<UsePGP> = I<whether to add a digital signature> (optional)
+
+Boolean value (0 or 1) controlling whether the FAQs will get digitally
+signed via an X-PGP-Sig header.
+
+This setting is optional; the default is 0.
+
+If you have set I<UsePGP> to 1, you must also supply the necessary
+information on your PGP oder GPG installation; please refer to the
+sample F<.yapfaqrc> file (see below) for more information on this
+topic.
+
+=back
+
+=head3 Example runtime configuration file
+
+    NNTPServer = 'localhost'
+    NNTPUser   = ''
+    NNTPPass   = ''
+    Sender     = ''
+    ConfigFile = 'yapfaq.cfg'
+    UsePGP     = 0
+
+    ################################## PGP-Config #################################
+    pgp        = '/usr/bin/pgp'                  # path to pgp
+    PGPVersion = '2'                             # Use 2 for 2.X 5 for PGP > 2.X and GPG for GPG
+    PGPSigner  = ''                              # sign as who?
+    PGPPass    = ''                              # pgp2 only
+    PathtoPGPPass = ''                           # pgp2 pgp5 and gpg
+    pgpbegin   = '-----BEGIN PGP SIGNATURE-----' # Begin of PGP-Signature
+    pgpend     = '-----END PGP SIGNATURE-----'   # End of PGP-Signature
+    pgptmpf    = 'pgptmp'                        # temporary file for PGP.
+    pgpheader  = 'X-PGP-Sig'
+
+=head3 Using more than one runtime configuration
+
+You may use more than one runtime configuration file with the B<-c>
+option (see below).
 
 =head1 OPTIONS
 
@@ -802,6 +892,13 @@ Instead of posting the article(s) to Usenet pipe them to the external
 I<program> on STDIN (which may post the article(s) then). A return
 value of 0 will be considered success.
 
+=item B<-c> I<.rc file>
+
+Load another runtime configuration file (.rc file) than F<.yaofaq.rc>.
+
+You may for example define another usenet server to post your FAQ(s)
+to or load another configuration file defining (an)other FAQ(s).
+
 =back
 
 =head1 EXAMPLES
@@ -836,6 +933,10 @@ There are no special environment variables used by B<yapfaq>.
 
 The script itself.
 
+=item F<.yapfaqrc>
+
+Runtime configuration file for B<yapfaq>.
+
 =item F<yapfaq.cfg>
 
 Configuration file for B<yapfaq>.
@@ -864,9 +965,8 @@ version of this program.
 
 Thomas Hochstein <thh@inter.net>
 
-Original author (until version 0.5b from 2003):
+Original author (up to version 0.5b, dating from 2003):
 Marc Brockschmidt <marc@marcbrockschmidt.de>
-
 
 =head1 COPYRIGHT AND LICENSE
 
