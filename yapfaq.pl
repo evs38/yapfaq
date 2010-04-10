@@ -14,6 +14,12 @@
 
 my $Version = "0.6.2";
 
+my $RCFile = '.yapfaqrc';
+my @ValidConfVars = ('NNTPServer','NNTPUser','NNTPPass','Sender','ConfigFile',
+                     'UsePGP','pgp','PGPVersion','PGPSigner','PGPPass',
+                     'PathtoPGPPass','pgpbegin','pgpend','pgptmpf','pgpheader');
+
+################################### Defaults ##################################
 my %Config = (NNTPServer => "localhost",
               NNTPUser   => "",
               NNTPPass   => "",
@@ -71,6 +77,9 @@ if ($Options{'h'}) {
 # -f: set $Faq
 my ($Faq) = $Options{'f'} if ($Options{'f'});
 
+# read runtime configuration (configuration variables)
+readrc (\$RCFile,\%Config) if -f $RCFile;
+
 # read configuration (configured FAQs)
 my @Config;
 readconfig (\$Config{'ConfigFile'}, \@Config, \$Faq);
@@ -123,6 +132,26 @@ foreach (@Config) {
 }
 
 exit;
+
+#################################### readrc ####################################
+# Takes a filename and the reference to an array which contains the valid options
+
+sub readrc{
+  my ($File, $Config) = @_;
+
+  print "Reading $$File.\n" if($Options{'v'});
+
+  open FH, "<$$File" or die "$0: Can't open $$File: $!";
+  while (<FH>) {
+    if (/^\s*(\S+)\s*=\s*'?(.*?)'?\s*(#.*$|$)/) {
+      if (grep(/$1/,@ValidConfVars)) {
+        $$Config{$1} = $2 if $2 ne '';
+      } else {
+        warn "$0: W: $1 is not a valid configuration variable (reading from $$File)\n";
+      }
+    }
+  }
+}
 
 ################################## readconfig ##################################
 # Takes a filename, a reference to an array, which will hold hashes with
