@@ -60,7 +60,7 @@ my ($TDY, $TDM, $TDD) = Today(); #TD: Today's date
 
 # read commandline options
 my %Options;
-getopts('Vhvpdt:f:', \%Options);
+getopts('Vhvpdt:f:s:', \%Options);
 # -V: print version / copyright information
 if ($Options{'V'}) {
   print "$0 v $Version\nCopyright (c) 2003 Marc Brockschmidt <marc\@marcbrockschmidt.de>\nCopyright (c) 2010 Thomas Hochstein <thh\@inter.net>\n";
@@ -321,6 +321,14 @@ sub post {
 	return;
   }
 
+  # pipe to script?
+  if(defined($Options{'s'})) {
+    open (POST, "| $Options{'s'}") or die "$0: E: Cannot fork $Options{'s'}: $!\n";
+    print POST @$ArticleR;
+    close POST;
+    return;
+  }
+
   my $NewsConnection = Net::NNTP->new($NNTPServer, Reader => 1)
     or die "$0: E: Can't connect to news server '$NNTPServer'!\n";
 
@@ -517,7 +525,7 @@ yapfaq - Post Usenet FAQs I<(yet another postfaq)>
 
 =head1 SYNOPSIS
 
-B<yapfaq> [B<-hvpd>] [B<-t> I<newsgroups> | CONSOLE] [B<-f> I<project name>]
+B<yapfaq> [B<-hvpd>] [B<-t> I<newsgroups> | CONSOLE] [B<-f> I<project name>] [B<-s> I<program>]
 
 =head1 REQUIREMENTS
 
@@ -759,6 +767,12 @@ are - post them. Consequently when the B<-p> option is set all FAQs
 will be posted unconditionally. That may not be what you want to
 achieve, so you can limit the operation of B<yapfaq> to the named FAQ
 only.
+
+=item B<-s> I<program> (pipe to script)
+
+Instead of posting the article(s) to Usenet pipe them to the external
+I<program> on STDIN (which may post the article(s) then). A return
+value of 0 will be considered success.
 
 =back
 
