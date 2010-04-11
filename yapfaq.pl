@@ -232,6 +232,21 @@ sub calcdelta {
   }
   return ($NYear, $NMonth, $NDay);
 }
+
+################################ updatestatus ###############################
+# Takes a MID and a status file name
+# and writes status information to disk
+
+sub updatestatus {
+  my ($ActName, $File, $date, $MID) = @_;
+  
+  print "$$ActName: Save status information.\n" if($Options{'v'});
+
+  open (FH, ">$$File.cfg") or die "$0: E: Can't open $$File.cfg: $!";
+  print FH "##;; Lastpost: $date\n";
+  print FH "##;; LastMID: $MID\n";
+  close FH;
+}
   
 ################################## postfaq ##################################
 # Takes a filename and many other vars.
@@ -321,18 +336,13 @@ sub postfaq {
   
   # post article
   print "$$ActName: Posting article ...\n" if($Options{'v'});
-  post(\@Article);
-
-  # Test mode?
-  return if($Options{'t'});
-
-  # otherwise: update status data
-  print "$$ActName: Save status information.\n" if($Options{'v'});
-
-  open (FH, ">$$File.cfg") or die "$0: E: Can't open $$File.cfg: $!";
-  print FH "##;; Lastpost: $day.$month.$year\n";
-  print FH "##;; LastMID: $MID\n";
-  close FH;
+  my $failure = post(\@Article);
+  
+  if ($failure) {
+    print "$$ActName: Posting failed, ERROR.dat may have more information.\n" if($Options{'v'} && (!defined($Options{'t'}) || $Options{'t'} !~ /console/i));
+  } else {
+    updatestatus($ActName, $File, "$day.$month.$year", $MID) if !defined($Options{'t'});
+  }
 }
 
 ################################## post ##################################
@@ -342,42 +352,49 @@ sub postfaq {
 
 sub post {
   my ($ArticleR) = @_;
+  my ($failure) = -1;
 
-  # Test mode?
+  # test mode - print article to console
   if(defined($Options{'t'}) and $Options{'t'} =~ /console/i) {
     print "-----BEGIN--------------------------------------------------\n";
-	print @$ArticleR;
+    print @$ArticleR;
     print "------END---------------------------------------------------\n";
-	return;
-  }
-
-  # pipe to script?
-  if(defined($Options{'s'})) {
+  # pipe article to script
+  } elsif(defined($Options{'s'})) {
     open (POST, "| $Options{'s'}") or die "$0: E: Cannot fork $Options{'s'}: $!\n";
     print POST @$ArticleR;
     close POST;
-    return;
+    if ($? == 0) {
+      $failure = 0;
+    } else {
+      warn "$0: W: $Options{'s'} exited with status ", ($? >> 8), "\n";
+      $failure = $?;
+    }
+  # post article
+  } else {
+    my $NewsConnection = Net::NNTP->new($Config{'NNTPServer'}, Reader => 1) or die "$0: E: Can't connect to news server '$Config{'NNTPServer'}'!\n";
+    $NewsConnection->authinfo ($Config{'NNTPUser'}, $Config{'NNTPPass'}) if (defined($Config{'NNTPUser'}));
+    $NewsConnection->post();
+    $NewsConnection->datasend (@$ArticleR);
+    $NewsConnection->dataend();
+
+    if ($NewsConnection->ok()) {
+      $failure = 0;
+    # Posting failed? Save to ERROR.dat
+    } else {
+	  warn "$0: W: Posting failed!\n";
+      open FH, ">>ERROR.dat";
+      print FH "\nPosting failed! Saving to ERROR.dat. Response from news server:\n";
+      print FH $NewsConnection->code();
+      print FH $NewsConnection->message();
+      print FH "\n";
+      print FH @$ArticleR;
+      print FH "-" x 80, "\n";
+      close FH;
+    }
+    $NewsConnection->quit();
   }
-
-  my $NewsConnection = Net::NNTP->new($Config{'NNTPServer'}, Reader => 1)    or die "$0: E: Can't connect to news server '$Config{'NNTPServer'}'!\n";
-  $NewsConnection->authinfo ($Config{'NNTPUser'}, $Config{'NNTPPass'}) if (defined($Config{'NNTPUser'}));
-  $NewsConnection->post();
-  $NewsConnection->datasend (@$ArticleR);
-  $NewsConnection->dataend();
-
-  # Posting failed? Save to ERROR.dat
-  if (!$NewsConnection->ok()) {
-    open FH, ">>ERROR.dat";
-    print FH "\nPosting failed! Saving to ERROR.dat. Response from news server:\n";
-    print FH $NewsConnection->code();
-    print FH $NewsConnection->message();
-    print FH "\n";
-    print FH @$ArticleR;
-    print FH "-" x 80, "\n";
-    close FH;
-  }
-
-  $NewsConnection->quit();
+  return $failure;
 }
 
 #-------- sub getpgpcommand
