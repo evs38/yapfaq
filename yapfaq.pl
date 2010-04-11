@@ -210,7 +210,7 @@ sub readconfig{
 	  warn "$0: W: The Expires for your project \"$$Config[$i]{'name'}\" is invalid - set to 3 month.\n";
     }
     unless(defined($$Config[$i]{'mid-format'}) && $$Config[$i]{'mid-format'} =~ /^<\S+\@\S{2,}\.\S{2,}>$/) {
-	  warn "$0: W: The Expires for your project \"$$Config[$i]{'name'}\" seems to be invalid - set to default.\n";
+	  warn "$0: W: The Message-ID format for your project \"$$Config[$i]{'name'}\" seems to be undefined or invalid - set to default.\n";
     }
   }
   $Error .= "-" x 25 . 'program terminated' . "-" x 25 . "\n" if $Error;
