@@ -207,10 +207,12 @@ sub readconfig{
       $Error .= "E: The Posting-frequency for your project \"$$Config[$i]{'name'}\" is invalid.\n"
     }
     unless(!$$Config[$i]{'expires'} || $$Config[$i]{'expires'} =~ /^\s*\d+\s*[dwmy]\s*$/) {
-	  warn "$0: W: The Expires for your project \"$$Config[$i]{'name'}\" is invalid - set to 3 month.\n";
+      warn "$0: W: The Expires for your project \"$$Config[$i]{'name'}\" is invalid - set to 3 month.\n";
+      $$Config[$i]{'expires'} = '3m'; # set default (3 month) if expires is unset or invalid
     }
-    unless(defined($$Config[$i]{'mid-format'}) && $$Config[$i]{'mid-format'} =~ /^<\S+\@\S{2,}\.\S{2,}>$/) {
-	  warn "$0: W: The Message-ID format for your project \"$$Config[$i]{'name'}\" seems to be undefined or invalid - set to default.\n";
+    unless(!$$Config[$i]{'mid-format'} || $$Config[$i]{'mid-format'} =~ /^<\S+\@\S{2,}\.\S{2,}>$/) {
+      warn "$0: W: The Message-ID format for your project \"$$Config[$i]{'name'}\" seems to be invalid - set to default.\n";
+      $$Config[$i]{'mid-format'} = '<%n-%d.%m.%y@'.hostfqdn.'>'; # set default if mid-format is invalid
     }
   }
   $Error .= "-" x 25 . 'program terminated' . "-" x 25 . "\n" if $Error;
@@ -264,7 +266,7 @@ sub postfaq {
   $$TDD = ($$TDD < 10 && $$TDD !~ /^0/) ? "0" . $$TDD : $$TDD;
 
   $MID = $$MIDF;
-  $MID = '<%n-%d.%m.%y@'.hostfqdn.'>' if !defined($MID);
+  $MID = '<%n-%d.%m.%y@'.hostfqdn.'>' if !defined($MID); # set to default if unset
   $MID =~ s/\%n/$$ActName/g;
   $MID =~ s/\%d/$$TDD/g;
   $MID =~ s/\%m/$$TDM/g;
@@ -635,7 +637,7 @@ or I<B<m>onths> or I<B<y>ears>.
 
 This value must be set.
 
-=item B<Expires> = I<time period>
+=item B<Expires> = I<time period> (optional)
 
 The period of time after which your message will expire. An Expires
 header will be calculated adding this time period to today's date.
@@ -643,7 +645,7 @@ header will be calculated adding this time period to today's date.
 You can declare this  time period either in I<B<d>ays> or I<B<w>weeks>
 or I<B<m>onths> or I<B<y>ears>.
 
-This setting is optional; the default  is 3 months.
+This setting is optional; the default is 3 months.
 
 =item B<From> = I<author>
 
@@ -669,14 +671,14 @@ appear in the Newsgroups header of the message.
 
 This value must be set.
 
-=item B<Fup2> = I<newsgroup | poster>
+=item B<Fup2> = I<newsgroup | poster>  (optional)
 
 A comma-separated list of newsgroup(s) or the special string I<poster>
 as it will appear in the Followup-To header of the message.
 
 This setting is optional.
 
-=item B<MID-Format> = I<pattern>
+=item B<MID-Format> = I<pattern>  (optional)
 
 A pattern from which the message ID is generated as it will appear in
 the Message-ID header of the message.
@@ -685,16 +687,20 @@ You may use the special strings C<%n> for the I<Name> of your project,
 C<%d> for the date the message is posted, C<%m> for the month and
 C<%y> for the year, respectively.
 
-This value must be set.
+This setting is optional; the default is '<%n-%d.%m.%y@I<YOURHOST>>'
+where I<YOURHOST> is the fully qualified domain name (FQDN) of the
+host B<yapfaq> is running on. Obviously that will only work if you
+have defined a reasonable hostname that the hostfqdn() function of
+Net::Domain can return.
 
-=item B<Supersede> = I<yes>
+=item B<Supersede> = I<yes>  (optional)
 
 Add Supersedes header to the message containing the Message-ID header
 of the last posting.
 
 This setting is optional; you should set it to yes or leave it out.
 
-=item B<ExtraHeader> = I<additional headers>
+=item B<ExtraHeader> = I<additional headers>  (optional)
 
 The contents of I<ExtraHeader> is added verbatim to the headers of
 your message so you can add custom headers like Approved.
@@ -718,7 +724,7 @@ This setting is optional.
     
     # time period after which the posting should expire
     # use (d)ay OR (w)eek OR (m)onth OR (y)ear
-    Expires = '3m'
+    # Expires = '3m'
     
     # header "From:"
     From = 'test@domain.invalid'
@@ -733,10 +739,10 @@ This setting is optional.
     NGs = 'de.test'
     
     # header "Followup-To:"
-    Fup2 = 'poster'
+    # Fup2 = 'poster'
     
     # Message-ID ("%n" is $Name)
-    MID-Format = '<%n-%d.%m.%y@domain.invalid>'
+    # MID-Format = '<%n-%d.%m.%y@domain.invalid>'
     
     # Supersede last posting?
     Supersede = yes
