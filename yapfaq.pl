@@ -12,7 +12,7 @@
 # It can be redistributed and/or modified under the same terms under 
 # which Perl itself is published.
 
-my $Version = "0.7";
+my $Version = "0.8-prelease";
 
 my $RCFile = '.yapfaqrc';
 my @ValidConfVars = ('NNTPServer','NNTPUser','NNTPPass','Sender','ConfigFile',
