@@ -1,6 +1,6 @@
 #! /usr/bin/perl -W
 #
-# yapfaq Version 0.6 by Thomas Hochstein
+# yapfaq Version 0.7 by Thomas Hochstein
 # (Original author: Marc Brockschmidt)
 #
 # This script posts any project described in its config-file. Most people
@@ -12,7 +12,7 @@
 # It can be redistributed and/or modified under the same terms under 
 # which Perl itself is published.
 
-my $Version = "0.6.2";
+my $Version = "0.7";
 
 my $RCFile = '.yapfaqrc';
 my @ValidConfVars = ('NNTPServer','NNTPUser','NNTPPass','Sender','ConfigFile',
