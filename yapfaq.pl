@@ -572,7 +572,7 @@ yapfaq - Post Usenet FAQs I<(yet another postfaq)>
 
 =head1 SYNOPSIS
 
-B<yapfaq> [B<-hvpd>] [B<-t> I<newsgroups> | CONSOLE] [B<-f> I<project name>] [B<-s> I<program>] [B<-c> I<.rc file>]
+B<yapfaq> [B<-Vhvpd>] [B<-t> I<newsgroups> | CONSOLE] [B<-f> I<project name>] [B<-s> I<program>] [B<-c> I<.rc file>]
 
 =head1 REQUIREMENTS
 
@@ -944,9 +944,26 @@ if it is due:
 
     yapfaq -t de.test -f myfaq
 
+Post all FAQs (that are due for posting) using inews from INN:
+
+    yapfaq -s inews
+
+Do a dry run using a runtime configuration from .alternaterc, showing
+which FAQs would be posted:
+
+    yapfaq -dvc .alternaterc
+
 =head1 ENVIRONMENT
 
-There are no special environment variables used by B<yapfaq>.
+=over 4
+
+=item NNTPSERVER
+
+The default NNTP server to post to, used by the Net::NNTP module. You
+can also  specify the server using the runtime configuration file (by
+default F<.yapfaqrc>).
+
+=back
 
 =head1 FILES
 
