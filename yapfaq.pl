@@ -166,7 +166,7 @@ sub readconfig{
   my ($File, $Config, $Faq) = @_;
   my ($LastEntry, $Error, $i) = ('','',0);
 
-  print "Reading configuration.\n" if($Options{'v'});
+  print "Reading configuration from $$File.\n" if($Options{'v'});
 
   open FH, "<$$File" or die "$0: E: Can't open $$File: $!";
   while (<FH>) {
