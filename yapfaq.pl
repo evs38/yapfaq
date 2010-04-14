@@ -269,6 +269,7 @@ sub postfaq {
   #Prepare MID:
   $$TDM = ($$TDM < 10 && $$TDM !~ /^0/) ? "0" . $$TDM : $$TDM;
   $$TDD = ($$TDD < 10 && $$TDD !~ /^0/) ? "0" . $$TDD : $$TDD;
+  my $Timestamp = time;
 
   $MID = $$MIDF;
   $MID = '<%n-%d.%m.%y@'.hostfqdn.'>' if !defined($MID); # set to default if unset
@@ -276,6 +277,7 @@ sub postfaq {
   $MID =~ s/\%d/$$TDD/g;
   $MID =~ s/\%m/$$TDM/g;
   $MID =~ s/\%y/$$TDY/g;
+  $MID =~ s/\%t/$Timestamp/g;
 
   #Now get the body:
   open (FH, "<$$File");
@@ -689,8 +691,9 @@ A pattern from which the message ID is generated as it will appear in
 the Message-ID header of the message.
 
 You may use the special strings C<%n> for the I<Name> of your project,
-C<%d> for the date the message is posted, C<%m> for the month and
-C<%y> for the year, respectively.
+C<%d> for the date the message is posted, C<%m> for the month, C<%y>
+for the year and C<%t> for a time stamp (number of seconds since the
+epoch), respectively.
 
 This setting is optional; the default is '<%n-%d.%m.%y@I<YOURHOST>>'
 where I<YOURHOST> is the fully qualified domain name (FQDN) of the
