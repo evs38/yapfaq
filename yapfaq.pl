@@ -215,7 +215,7 @@ sub readconfig{
       warn "$0: W: The Expires for your project \"$$Config[$i]{'name'}\" is invalid - set to 3 month.\n";
       $$Config[$i]{'expires'} = '3m'; # set default (3 month) if expires is unset or invalid
     }
-    unless(!$$Config[$i]{'mid-format'} || $$Config[$i]{'mid-format'} =~ /^<\S+\@\S{2,}\.\S{2,}>$/) {
+    unless(!$$Config[$i]{'mid-format'} || $$Config[$i]{'mid-format'} =~ /^<\S+\@(\S+\.)?\S{2,}\.\S{2,}>/) {
       warn "$0: W: The Message-ID format for your project \"$$Config[$i]{'name'}\" seems to be invalid - set to default.\n";
       $$Config[$i]{'mid-format'} = '<%n-%d.%m.%y@'.hostfqdn.'>'; # set default if mid-format is invalid
     }
