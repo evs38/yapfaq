@@ -20,7 +20,7 @@ my @ValidConfVars = ('NNTPServer','NNTPUser','NNTPPass','Sender','ConfigFile',
                      'PathtoPGPPass','pgpbegin','pgpend','pgptmpf','pgpheader');
 
 ################################### Defaults ##################################
-my %Config = (NNTPServer => "localhost",
+my %Config = (NNTPServer => "",
               NNTPUser   => "",
               NNTPPass   => "",
               Sender     => "",
