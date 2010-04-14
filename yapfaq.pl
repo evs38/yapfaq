@@ -14,12 +14,17 @@
 
 my $Version = "0.8-prelease";
 
+# Please do not change this setting!
+# You may override the default .rc file (.yapfaqrc) by using "-c .rc file"
 my $RCFile = '.yapfaqrc';
+# Valid configuration variables for use in a .rc file
 my @ValidConfVars = ('NNTPServer','NNTPUser','NNTPPass','Sender','ConfigFile',
                      'UsePGP','pgp','PGPVersion','PGPSigner','PGPPass',
                      'PathtoPGPPass','pgpbegin','pgpend','pgptmpf','pgpheader');
 
-################################### Defaults ##################################
+################################### Defaults ###################################
+# Please do not change anything in here!
+# Use a runtime configuration file (.yapfaqrc by default) to override defaults.
 my %Config = (NNTPServer => "",
               NNTPUser   => "",
               NNTPPass   => "",
@@ -50,7 +55,7 @@ my @PGPorderheaders = ('from', 'newsgroups', 'subject', 'control',
 	'content-transfer-encoding', 'summary', 'keywords', 'cancel-lock',
 	'cancel-key', 'also-control', 'x-pgp', 'user-agent');
 
-############################# End of Configuration #############################
+################################# Main program #################################
 
 use strict;
 use Net::NNTP;
