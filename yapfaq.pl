@@ -18,9 +18,7 @@ my $Version = "0.8-prelease";
 # You may override the default .rc file (.yapfaqrc) by using "-c .rc file"
 my $RCFile = '.yapfaqrc';
 # Valid configuration variables for use in a .rc file
-my @ValidConfVars = ('NNTPServer','NNTPUser','NNTPPass','Sender','ConfigFile',
-                     'UsePGP','pgp','PGPVersion','PGPSigner','PGPPass',
-                     'PathtoPGPPass','pgpbegin','pgpend','pgptmpf','pgpheader');
+my @ValidConfVars = ('NNTPServer','NNTPUser','NNTPPass','Sender','ConfigFile');
 
 ################################### Defaults ###################################
 # Please do not change anything in here!
@@ -29,31 +27,7 @@ my %Config = (NNTPServer => "",
               NNTPUser   => "",
               NNTPPass   => "",
               Sender     => "",
-              ConfigFile => "yapfaq.cfg",
-              UsePGP     => 0,
-
-              ################################## PGP-Config #################################
-              pgp           => '/usr/bin/pgp',                  # path to pgp
-              PGPVersion    => '2',                             # Use 2 for 2.X, 5 for PGP > 2.X and GPG for GPG
-              PGPSigner     => '',                              # sign as who?
-              PGPPass       => '',                              # pgp2 only
-              PathtoPGPPass => '',                              # pgp2, pgp5 and gpg
-              pgpbegin      => '-----BEGIN PGP SIGNATURE-----', # Begin of PGP-Signature
-              pgpend        => '-----END PGP SIGNATURE-----',   # End of PGP-Signature
-              pgptmpf       => 'pgptmp',                        # temporary file for PGP.
-              pgpheader     => 'X-PGP-Sig');
-
-my @PGPSignHeaders = ('From', 'Newsgroups', 'Subject', 'Control',
-	'Supersedes', 'Followup-To', 'Date', 'Sender', 'Approved',
-	'Message-ID', 'Reply-To', 'Cancel-Lock', 'Cancel-Key',
-	'Also-Control', 'Distribution');
-
-my @PGPorderheaders = ('from', 'newsgroups', 'subject', 'control',
-	'supersedes', 'followup-To', 'date', 'organization', 'lines',
-	'sender', 'approved', 'distribution', 'message-id',
-	'references', 'reply-to', 'mime-version', 'content-type',
-	'content-transfer-encoding', 'summary', 'keywords', 'cancel-lock',
-	'cancel-key', 'also-control', 'x-pgp', 'user-agent');
+              ConfigFile => "yapfaq.cfg");
 
 ################################# Main program #################################
 
@@ -340,9 +314,8 @@ sub postfaq {
     push @Header, "$_\n" for (split /\n/, $$ExtraHeaders);
   }
 
-  # sign article if $UsePGP is true
-  my @Article = ($Config{'UsePGP'})?@{signpgp(\@Header, \@Body)}:(@Header, "\n", @Body);
-  
+  my @Article = (@Header, "\n", @Body);
+
   # post article
   print "$$ActName: Posting article ...\n" if($Options{'v'});
   my $failure = post(\@Article);
@@ -404,169 +377,6 @@ sub post {
     $NewsConnection->quit();
   }
   return $failure;
-}
-
-#-------- sub getpgpcommand
-# getpgpcommand generates the command to sign the message and returns it.
-#
-# Receives:
-# 	- $PGPVersion: A scalar holding the PGPVersion
-sub getpgpcommand {
-  my ($PGPVersion) = @_;
-  my $PGPCommand;
-
-  if ($PGPVersion eq '2') {
-    if ($Config{'PathtoPGPPass'} && !$Config{'PGPPass'}) {
-      open (PGPPW, $Config{'PathtoPGPPass'}) or die "$0: E: Can't open $Config{'PathtoPGPPass'}: $!";
-      Config{'$PGPPass'} = <PGPPW>;
-      close PGPPW;
-    }
-  
-    if (Config{'$PGPPass'}) {
-      $PGPCommand = "PGPPASS=\"".$Config{'PGPPass'}."\" ".$Config{'pgp'}." -u \"".$Config{'PGPSigner'}."\" +verbose=0 language='en' -saft <".$Config{'pgptmpf'}.".txt >".$Config{'pgptmpf'}.".txt.asc";
-    } else {
-      die "$0: E: PGP-Passphrase is unknown!\n";
-    }
-  } elsif ($PGPVersion eq '5') {
-    if ($Config{'PathtoPGPPass'}) {
-      $PGPCommand = "PGPPASSFD=2 ".$Config{'pgp'}."s -u \"".$Config{'PGPSigner'}."\" -t --armor -o ".$Config{'pgptmpf'}.".txt.asc -z -f < ".$Config{'pgptmpf'}.".txt 2<".$Config{'PathtoPGPPass'};
-    } else {
-      die "$0: E: PGP-Passphrase is unknown!\n";
-    }
-  } elsif ($PGPVersion =~ m/GPG/io) {
-    if (Config{'$PathtoPGPPass'}) {
-      $PGPCommand = $Config{'pgp'}." --digest-algo MD5 -a -u \"".$Config{'PGPSigner'}."\" -o ".$Config{'pgptmpf'}.".txt.asc --no-tty --batch --passphrase-fd 2 2<".$Config{'PathtoPGPPass'}." --clearsign ".$Config{'pgptmpf'}.".txt";
-    } else {
-      die "$0: E: Passphrase is unknown!\n";
-    }
-  } else {
-    die "$0: E: Unknown PGP-Version $PGPVersion!";
-  }
-  return $PGPCommand;
-}
-
-
-#-------- sub signarticle
-# signarticle signs an articel and returns a reference to an array
-# 	containing the whole signed Message.
-#
-# Receives:
-# 	- $HeaderAR: A reference to a array containing the articles headers.
-# 	- $BodyR: A reference to an array containing the body.
-#
-# Returns:
-# 	- $MessageRef: A reference to an array containing the whole message.
-sub signpgp {
-  my ($HeaderAR, $BodyR) = @_;
-  my (@pgphead, @pgpbody, $pgphead, $pgpbody, $header, $signheaders, @signheaders, $currentheader, $HeaderR, $line);
-
-  foreach my $line (@$HeaderAR) {
-    if ($line =~ /^(\S+):\s+(.*)$/s) {
-      $currentheader = $1;
-      $$HeaderR{lc($currentheader)} = "$1: $2";
-    } else {
-      $$HeaderR{lc($currentheader)} .= $line;
-    }
-  }
-
-  foreach (@PGPSignHeaders) {
-    if (defined($$HeaderR{lc($_)}) && $$HeaderR{lc($_)} =~ m/^[^\s:]+: .+/o) {
-      push @signheaders, $_;
-    }
-  }
-
-  $pgpbody = join ("", @$BodyR);
-
-  # Delete and create the temporary pgp-Files
-  unlink "$Config{'pgptmpf'}.txt";
-  unlink "$Config{'pgptmpf'}.txt.asc";
-  $signheaders = join(",", @signheaders);
-
-  $pgphead = "X-Signed-Headers: $signheaders\n";
-  foreach $header (@signheaders) {
-    if ($$HeaderR{lc($header)} =~ m/^[^\s:]+: (.+?)\n?$/so) {
-      $pgphead .= $header.": ".$1."\n";
-    }
-  }
-
-  open(FH, ">" . $Config{'pgptmpf'} . ".txt") or die "$0: E: can't open $Config{'pgptmpf'}: $!\n";
-  print FH $pgphead, "\n", $pgpbody;
-  print FH "\n" if ($Config{'PGPVersion'} =~ m/GPG/io);	# workaround a pgp/gpg incompatibility - should IMHO be fixed in pgpverify
-  close(FH) or warn "$0: W: Couldn't close TMP: $!\n";
-
-  # Start PGP, then read the signature;
-  my $PGPCommand = getpgpcommand($Config{'PGPVersion'});
-  `$PGPCommand`;
-
-  open (FH, "<" . $Config{'pgptmpf'} . ".txt.asc") or die "$0: E: can't open ".$Config{'pgptmpf'}.".txt.asc: $!\n";
-  $/ = "$Config{'pgpbegin'}\n";
-  $_ = <FH>;
-  unless (m/\Q$Config{'pgpbegin'}\E$/o) {
-#    unlink $Config{'pgptmpf'} . ".txt";
-#    unlink $Config{'pgptmpf'} . ".txt.asc";
-    die "$0: E: $Config{'pgpbegin'} not found in ".$Config{'pgptmpf'}.".txt.asc\n"
-  }
-  unlink($Config{'pgptmpf'} . ".txt") or warn "$0: W: Couldn't unlink $Config{'pgptmpf'}.txt: $!\n";
-
-  $/ = "\n";
-  $_ = <FH>;
-  unless (m/^Version: (\S+)(?:\s(\S+))?/o) {
-    unlink $Config{'pgptmpf'} . ".txt";
-    unlink $Config{'pgptmpf'} . ".txt.asc";
-    die "$0: E: didn't find PGP Version line where expected.\n";
-  }
-  
-  if (defined($2)) {
-    $$HeaderR{$Config{'pgpheader'}} = $1."-".$2." ".$signheaders;
-  } else {
-    $$HeaderR{$Config{'pgpheader'}} = $1." ".$signheaders;
-  }
-  
-  do {          # skip other pgp headers like
-    $_ = <FH>;  # "charset:"||"comment:" until empty line
-  } while ! /^$/;
-
-  while (<FH>) {
-    chomp;
-    last if /^\Q$Config{'pgpend'}\E$/;
-    $$HeaderR{$Config{'pgpheader'}} .= "\n\t$_";
-  }
-  
-  $$HeaderR{$Config{'pgpheader'}} .= "\n" unless ($$HeaderR{$Config{'pgpheader'}} =~ /\n$/s);
-
-  $_ = <FH>;
-  unless (eof(FH)) {
-    unlink $Config{'pgptmpf'} . ".txt";
-    unlink $Config{'pgptmpf'} . ".txt.asc";
-    die "$0: E: unexpected data following $Config{'pgpend'}\n";
-  }
-  close(FH);
-  unlink "$Config{'pgptmpf'}.txt.asc";
-
-  my $tmppgpheader = $Config{'pgpheader'} . ": " . $$HeaderR{$Config{'pgpheader'}};
-  delete $$HeaderR{$Config{'pgpheader'}};
-
-  @pgphead = ();
-  foreach $header (@PGPorderheaders) {
-    if ($$HeaderR{$header} && $$HeaderR{$header} ne "\n") {
-      push(@pgphead, "$$HeaderR{$header}");
-      delete $$HeaderR{$header};
-    }
-  }
-
-  foreach $header (keys %$HeaderR) {
-    if ($$HeaderR{$header} && $$HeaderR{$header} ne "\n") {
-      push(@pgphead, "$$HeaderR{$header}");
-      delete $$HeaderR{$header};
-    }
-  }
-
-  push @pgphead, ("X-PGP-Key: " . $Config{'PGPSigner'} . "\n"), $tmppgpheader;
-  undef $tmppgpheader;
-
-  @pgpbody = split /$/m, $pgpbody;
-  my @pgpmessage = (@pgphead, "\n", @pgpbody);
-  return \@pgpmessage;
 }
 
 __END__
@@ -829,18 +639,6 @@ This setting is optional.
 The configuration file defining the FAQ(s) to post. Must be set (or
 omitted; the default is "yapfaq.cfg").
 
-=item B<UsePGP> = I<whether to add a digital signature> (optional)
-
-Boolean value (0 or 1) controlling whether the FAQs will get digitally
-signed via an X-PGP-Sig header.
-
-This setting is optional; the default is 0.
-
-If you have set I<UsePGP> to 1, you must also supply the necessary
-information on your PGP oder GPG installation; please refer to the
-sample F<.yapfaqrc> file (see below) for more information on this
-topic.
-
 =back
 
 =head3 Example runtime configuration file
@@ -850,18 +648,6 @@ topic.
     NNTPPass   = ''
     Sender     = ''
     ConfigFile = 'yapfaq.cfg'
-    UsePGP     = 0
-
-    ################################## PGP-Config #################################
-    pgp        = '/usr/bin/pgp'                  # path to pgp
-    PGPVersion = '2'                             # Use 2 for 2.X 5 for PGP > 2.X and GPG for GPG
-    PGPSigner  = ''                              # sign as who?
-    PGPPass    = ''                              # pgp2 only
-    PathtoPGPPass = ''                           # pgp2 pgp5 and gpg
-    pgpbegin   = '-----BEGIN PGP SIGNATURE-----' # Begin of PGP-Signature
-    pgpend     = '-----END PGP SIGNATURE-----'   # End of PGP-Signature
-    pgptmpf    = 'pgptmp'                        # temporary file for PGP.
-    pgpheader  = 'X-PGP-Sig'
 
 =head3 Using more than one runtime configuration
 
@@ -922,6 +708,10 @@ only.
 Instead of posting the article(s) to Usenet pipe them to the external
 I<program> on STDIN (which may post the article(s) then). A return
 value of 0 will be considered success.
+
+For example, you may want to use the I<inews> utility from the INN package
+or the much more powerful replacement I<tinews.pl> from
+I<ftp://ftp.tin.org/tin/tools/tinews.pl> which is able to sign postings.
 
 =item B<-c> I<.rc file>
 
