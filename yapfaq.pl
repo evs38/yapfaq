@@ -18,7 +18,7 @@ my $Version = "0.8-prelease";
 # You may override the default .rc file (.yapfaqrc) by using "-c .rc file"
 my $RCFile = '.yapfaqrc';
 # Valid configuration variables for use in a .rc file
-my @ValidConfVars = ('NNTPServer','NNTPUser','NNTPPass','Sender','ConfigFile');
+my @ValidConfVars = ('NNTPServer','NNTPUser','NNTPPass','Sender','ConfigFile','Program');
 
 ################################### Defaults ###################################
 # Please do not change anything in here!
@@ -27,7 +27,8 @@ my %Config = (NNTPServer => "",
               NNTPUser   => "",
               NNTPPass   => "",
               Sender     => "",
-              ConfigFile => "yapfaq.cfg");
+              ConfigFile => "yapfaq.cfg",
+              Program    => "");
 
 ################################# Main program #################################
 
@@ -63,6 +64,8 @@ if (-f $RCFile) {
 } else {
   warn "$0: W: .rc file $RCFile does not exist!\n";
 }
+
+$Options{'s'} = $Config{'Program'} if (!defined($Options{'s'}));
 
 # read configuration (configured FAQs)
 my @Config;
@@ -639,6 +642,13 @@ This setting is optional.
 The configuration file defining the FAQ(s) to post. Must be set (or
 omitted; the default is "yapfaq.cfg").
 
+=item B<Program> = I<file name> (optional)
+
+A program the article is piped to instead of posting it to Usenet.
+See option "-f" below (which takes preference).
+
+This setting is optional.
+
 =back
 
 =head3 Example runtime configuration file
@@ -648,6 +658,7 @@ omitted; the default is "yapfaq.cfg").
     NNTPPass   = ''
     Sender     = ''
     ConfigFile = 'yapfaq.cfg'
+    Program    = ''
 
 =head3 Using more than one runtime configuration
 
@@ -712,6 +723,9 @@ value of 0 will be considered success.
 For example, you may want to use the I<inews> utility from the INN package
 or the much more powerful replacement I<tinews.pl> from
 I<ftp://ftp.tin.org/tin/tools/tinews.pl> which is able to sign postings.
+
+If I<Program> is also defined in the runtime configuration file (by default
+F<.yapfaqrc>), B<-s> takes preference.
 
 =item B<-c> I<.rc file>
 
