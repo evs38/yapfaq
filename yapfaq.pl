@@ -12,7 +12,7 @@
 # It can be redistributed and/or modified under the same terms under 
 # which Perl itself is published.
 
-my $Version = "0.8-prelease";
+our $VERSION = "0.8-prelease";
 
 # Please do not change this setting!
 # You may override the default .rc file (.yapfaqrc) by using "-c .rc file"
@@ -38,6 +38,7 @@ use Net::Domain qw(hostfqdn);
 use Date::Calc qw(Add_Delta_YM Add_Delta_Days Delta_Days Today);
 use Fcntl ':flock'; # import LOCK_* constants
 use Getopt::Std;
+$Getopt::Std::STANDARD_HELP_VERSION = 1;
 my ($TDY, $TDM, $TDD) = Today(); #TD: Today's date
 
 # read commandline options
@@ -45,7 +46,7 @@ my %Options;
 getopts('Vhvpdt:f:c:s:', \%Options);
 # -V: print version / copyright information
 if ($Options{'V'}) {
-  print "$0 v $Version\nCopyright (c) 2003 Marc Brockschmidt <marc\@marcbrockschmidt.de>\nCopyright (c) 2010 Thomas Hochstein <thh\@inter.net>\n";
+  print "$0 v $VERSION\nCopyright (c) 2003 Marc Brockschmidt <marc\@marcbrockschmidt.de>\nCopyright (c) 2010 Thomas Hochstein <thh\@inter.net>\n";
   print "This program is free software; you may redistribute it and/or modify it under the same terms as Perl itself.\n";
   exit(0);
 }
@@ -312,7 +313,7 @@ sub postfaq {
   push @Header, "Reply-To: $$ReplyTo\n" if $$ReplyTo;
   push @Header, "Content-Type: text/plain; charset=ISO-8859-15\n";
   push @Header, "Content-Transfer-Encoding: 8bit\n";
-  push @Header, "User-Agent: yapfaq/$Version\n";
+  push @Header, "User-Agent: yapfaq/$VERSION\n";
   if ($$ExtraHeaders) {
     push @Header, "$_\n" for (split /\n/, $$ExtraHeaders);
   }
