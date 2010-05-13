@@ -1,3 +1,50 @@
+Version 0.8
+
+* Documentation: Add Git repository and bug tracker.
+  Thomas Hochstein <thh@inter.net> Thu May 13 19:21:05 2010 +0200  
+
+* Making use of Getopt::Std's --help and --version.
+  Fixes #3.
+  Thomas Hochstein <thh@inter.net> Thu May 13 19:33:25 2010 +0200    
+
+* New: Add "Program" to .yapfaqrc.
+  Fixes #2.
+  Thomas Hochstein <thh@inter.net> Thu May 13 19:31:49 2010 +0200    
+
+* Change: Drop PGP support.
+  You may use tinews.pl from
+  ftp://ftp.tin.org/tin/tools/tinews.pl instead.
+  Fixes #1.
+  Thomas Hochstein <thh@inter.net> Thu May 13 19:24:44 2010 +0200    
+
+* Fix: Consistency check for MID-Format fixed (regexp).
+  Thomas Hochstein <thh@inter.net> Wed Apr 14 23:17:16 2010 +0200
+
+* New: MID-Format may now contain %t for a Unix timestamp.
+  %t will be replaced by the number of seconds since the epoch.
+  Thomas Hochstein <thh@inter.net> Wed Apr 14 23:18:04 2010 +0200    
+
+* Documentation changes
+  - Change sample yapfaq.cfg (mark optional settings).
+    Optional settings are mostly commented out.
+    Thomas Hochstein <thh@inter.net> Wed Apr 14 09:10:05 2010 +0200
+  - Fix: Add "-V", NNTPSERVER to documentation, add more examples.
+    Added examples for -s and -c.
+    Thomas Hochstein <thh@inter.net> Wed Apr 14 10:02:48 2010 +0200
+  - Add comments pointing to .yapfaqrc to source.
+    Thomas Hochstein <thh@inter.net> Wed Apr 14 10:10:28 2010 +0200
+
+* readconfig(): Add file name to verbose output.
+  Thomas Hochstein <thh@inter.net> Wed Apr 14 09:38:23 2010 +0200    
+
+* Change: Reset default for NNTPServer to "unset".
+  Since yapfaq fill fall back to Perl's build-in defaults,
+  that should be no problem; furthermore user may now
+  override this setting via .yapfaqrc without changing
+  the code.
+  Thomas Hochstein <thh@inter.net> Wed Apr 14 09:11:45 2010 +0200
+
+
 Version 0.7
 
 * Change: readconfig(): Make mid-format optional.
