@@ -807,12 +807,18 @@ the last post of that FAQ.
 
 =head1 BUGS
 
-Many, I'm sure.
+Please report any bugs or feature request to the author or use the
+bug tracker at L<http://bugs.th-h.de/>!
 
 =head1 SEE ALSO
 
 L<http://th-h.de/download/scripts.php> will have the current
 version of this program.
+
+This program is maintained using the Git version control system. You
+may clone L<git://code.th-h.de/usenet/yapfaq.git> to check out the
+current development tree or browse it on the web via
+L<http://code.th-h.de/?p=usenet/yapfaq.git>.
 
 =head1 AUTHOR
 
