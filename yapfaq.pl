@@ -12,7 +12,7 @@
 # It can be redistributed and/or modified under the same terms under 
 # which Perl itself is published.
 
-our $VERSION = "0.8.1";
+our $VERSION = "0.9-prelease";
 
 # Please do not change this setting!
 # You may override the default .rc file (.yapfaqrc) by using "-c .rc file"
