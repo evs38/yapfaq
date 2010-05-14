@@ -66,7 +66,7 @@ if (-f $RCFile) {
   warn "$0: W: .rc file $RCFile does not exist!\n";
 }
 
-$Options{'s'} = $Config{'Program'} if (!defined($Options{'s'}));
+$Options{'s'} = $Config{'Program'} if (defined($Config{'Program'}) && $Config{'Program'} && !defined($Options{'s'}));
 
 # read configuration (configured FAQs)
 my @Config;
