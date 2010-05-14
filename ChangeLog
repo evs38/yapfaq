@@ -1,3 +1,10 @@
+Version 0.8.1
+
+* Fix broken implementation of "Program" in .yapfaqrc.
+  Fixes #4.
+  Thomas Hochstein <thh@inter.net>  2010-05-14 21:58:15
+
+
 Version 0.8
 
 * Documentation: Add Git repository and bug tracker.
