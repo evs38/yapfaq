@@ -748,6 +748,19 @@ to or load another configuration file defining (an)other FAQ(s).
 
 =back
 
+=head1 INSTALLATION
+
+Just copy the contents of the tarball in some directory and get started.
+
+You can post your first test with
+
+    yapfaq -c .yapfaqrc.sample
+
+or copy F<.yapfaqrc.sample> to F<.yapfaqrc> and F<yapfaq.cfg.sample>
+to F<yapfaq.cfg>, edit those files and get really started!
+
+=back
+
 =head1 EXAMPLES
 
 Post all FAQs that are due for posting:

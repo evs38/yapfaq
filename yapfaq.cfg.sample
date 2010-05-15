@@ -1,9 +1,9 @@
 # name of your project
-Name = 'testpost'
+Name = 'sample'
 
 # file to post (complete body and pseudo-headers)
 # ($File.cfg contains data on last posting and last MID)
-File = 'test.txt'
+File = 'sample.txt'
 
 # how often your project should be posted
 # use (d)ay OR (w)eek OR (m)onth OR (y)ear
@@ -15,7 +15,7 @@ Posting-frequency = '1d'
 # Expires = '3m'
 
 # header "From:"
-From = 'test@domain.invalid'
+From = 'John Doe <john-doe@example.com>'
 
 # header "Subject:"
 # (may contain "%LM" which will be replaced by the contents of the
@@ -31,8 +31,8 @@ NGs = 'de.test'
 # Fup2 = 'poster'
 
 # Message-ID ("%n" is $Name)
-# This setting is optional. Default: <%n-%d.%m.%y@YOURHOST>
-# MID-Format = '<%n-%d.%m.%y@domain.invalid>'
+# This setting is optional. Default: <%n-%y-%m-%d@YOURHOST>
+# MID-Format = '<%n-%y-%m-%d@domain.invalid>'
 
 # Supersede last posting?
 # This setting is optional. Default: unset

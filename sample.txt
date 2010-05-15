@@ -1,0 +1,9 @@
+Last-modified: 2010-05-15
+
+This is a test message.
+
+Foo.
+
+Bar.
+
+That's quite enought, isn't it?
