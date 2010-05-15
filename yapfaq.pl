@@ -299,6 +299,10 @@ sub postfaq {
   # Test mode?
   if($Options{'t'} and $Options{'t'} !~ /console/i) {
     $$NG = $Options{'t'};
+    $MID =~ s/@/-$Timestamp-test@/g;
+    $$ExtraHeaders .= "\n" if $$ExtraHeaders;
+    $$ExtraHeaders .= "X-Supersedes: $$Supersedes\nX-yapfaq-Remark: This is only a test message.";
+    undef $$Supersedes;
   }
 
   #Now create the complete Header:
@@ -698,11 +702,16 @@ update any status information.
 =item B<-t> I<newsgroup(s) | CONSOLE> (test)
 
 Don't post to the newsgroups defined in F<yqpfaq.cfg>, but to the
-newsgroups given after B<-t> as a comma-separated list or print the
-FAQs to STDOUT separated by lines of dashes if the special string
-C<CONSOLE> is given.  This can be used to preview what B<yapfaq> would
-do without embarassing yourself on Usenet.  The status files are not
-updated when this option is given.
+(test) newsgroup(s) given after B<-t> as a comma-separated list or
+print the FAQs to STDOUT separated by lines of dashes if the special
+string C<CONSOLE> is given.  This can be used to preview what
+B<yapfaq> would do without embarassing yourself on Usenet. 
+
+The status files are not updated when this option is given.
+
+When this option is used to post to some other newsgroup(s), a(nother)
+timestamp is added to the Message-ID header and the Supersedes header
+is replaced by a special X-Supersedes header.
 
 You may want to use this with the B<-f> option (see below).
 
