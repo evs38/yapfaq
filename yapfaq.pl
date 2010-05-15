@@ -1,6 +1,6 @@
 #! /usr/bin/perl -W
 #
-# yapfaq Version 0.8.1 by Thomas Hochstein
+# yapfaq Version 0.8.2 by Thomas Hochstein
 # (Original author: Marc Brockschmidt)
 #
 # This script posts any project described in its config-file. Most people
@@ -12,7 +12,7 @@
 # It can be redistributed and/or modified under the same terms under 
 # which Perl itself is published.
 
-our $VERSION = "0.8.1";
+our $VERSION = "0.8.2";
 
 # Please do not change this setting!
 # You may override the default .rc file (.yapfaqrc) by using "-c .rc file"

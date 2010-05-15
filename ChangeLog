@@ -1,8 +1,14 @@
+Version 0.8.2
+
+* Fix: Accept leading/trailing whitespace for Last-modified pseudo header.
+  Thomas Hochstein <thh@inter.net>  Sat May 15 16:32:58 2010 +0200
+
+
 Version 0.8.1
 
 * Fix broken implementation of "Program" in .yapfaqrc.
   Fixes #4.
-  Thomas Hochstein <thh@inter.net>  2010-05-14 21:58:15
+  Thomas Hochstein <thh@inter.net>  Fri May 14 21:58:15 2010 +0200
 
 
 Version 0.8
