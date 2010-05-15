@@ -292,6 +292,8 @@ sub postfaq {
   #Replace %LM by the content of the news.answer-pseudo-header Last-modified:
   if ($LastModified) {
     $$Subject =~ s/\%LM/$LastModified/;
+  } else {
+    $$Subject =~ s/[<\[{\(]?\%LM[>\]}\)]?//;
   }
 
   # Test mode?
