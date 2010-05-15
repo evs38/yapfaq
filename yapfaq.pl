@@ -195,7 +195,7 @@ sub readconfig{
     }
     unless(!$$Config[$i]{'mid-format'} || $$Config[$i]{'mid-format'} =~ /^<\S+\@(\S+\.)?\S{2,}\.\S{2,}>/) {
       warn "$0: W: The Message-ID format for your project \"$$Config[$i]{'name'}\" seems to be invalid - set to default.\n";
-      $$Config[$i]{'mid-format'} = '<%n-%d.%m.%y@'.hostfqdn.'>'; # set default if mid-format is invalid
+      $$Config[$i]{'mid-format'} = '<%n-%y-%m-%d@'.hostfqdn.'>'; # set default if mid-format is invalid
     }
   }
   $Error .= "-" x 25 . 'program terminated' . "-" x 25 . "\n" if $Error;
@@ -250,7 +250,7 @@ sub postfaq {
   my $Timestamp = time;
 
   $MID = $$MIDF;
-  $MID = '<%n-%d.%m.%y@'.hostfqdn.'>' if !defined($MID); # set to default if unset
+  $MID = '<%n-%y-%m-%d@'.hostfqdn.'>' if !defined($MID); # set to default if unset
   $MID =~ s/\%n/$$ActName/g;
   $MID =~ s/\%d/$$TDD/g;
   $MID =~ s/\%m/$$TDM/g;
@@ -515,7 +515,7 @@ C<%d> for the date the message is posted, C<%m> for the month, C<%y>
 for the year and C<%t> for a time stamp (number of seconds since the
 epoch), respectively.
 
-This setting is optional; the default is '<%n-%d.%m.%y@I<YOURHOST>>'
+This setting is optional; the default is '<%n-%y-%m-%d@I<YOURHOST>>'
 where I<YOURHOST> is the fully qualified domain name (FQDN) of the
 host B<yapfaq> is running on. Obviously that will only work if you
 have defined a reasonable hostname that the hostfqdn() function of
