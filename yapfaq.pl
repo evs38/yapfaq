@@ -36,7 +36,6 @@ use strict;
 use Net::NNTP;
 use Net::Domain qw(hostfqdn);
 use Date::Calc qw(Add_Delta_YM Add_Delta_Days Delta_Days Today);
-use Fcntl ':flock'; # import LOCK_* constants
 use Getopt::Std;
 $Getopt::Std::STANDARD_HELP_VERSION = 1;
 my ($TDY, $TDM, $TDD) = Today(); #TD: Today's date
