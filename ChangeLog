@@ -1,3 +1,40 @@
+Version 0.9
+
+* Drop use of Fcntl (not needed).
+  Thomas Hochstein <thh@inter.net> Tue Jun 15 22:30:11 2010 +0200
+
+* Changed packaging.
+  - Drop .yapfaqrc and yapfaq.cfg in favor of .yapfaqrc.sample
+    and yapfaq.cfg.sample; rename test.txt to sample.txt.
+  - Change contents of these files to reflect the new names.
+  - Update some defaults, change sample.txt contents to English.
+  - Add "INSTALLATION" chapter to documentation.
+  Fixes #7.
+  Thomas Hochstein <thh@inter.net> Sat May 15 19:16:40 2010 +0200
+
+* Change default Message-ID format.
+  Thomas Hochstein <thh@inter.net> Sat May 15 19:04:24 2010 +0200
+	
+* Change: Modify headers for test posts.
+  - Change MID so you can do multiple tests.
+  - Replace Supersedes with X-Supersedes so you do not delete
+    postings while testing.
+  - Add remark ("This is a test message.").
+  - Change documentation accordingly.
+  Fixes #6.
+  Thomas Hochstein <thh@inter.net> Sat May 15 17:22:20 2010 +0200
+
+* Change: Drop %LM from subject if Last-Modified is not found.
+  Thomas Hochstein <thh@inter.net> Sat May 15 16:36:52 2010 +0200
+
+
+Version 0.8.2
+
+* Fix: Accept leading/trailing whitespace for Last-modified pseudo header.
+  Fixes #5.
+  Thomas Hochstein <thh@inter.net> Sat May 15 16:32:58 2010 +0200
+
+
 Version 0.8.1
 
 * Fix broken implementation of "Program" in .yapfaqrc.
