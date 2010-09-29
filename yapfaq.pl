@@ -831,7 +831,7 @@ the last post of that FAQ.
 
 =head1 BUGS
 
-Please report any bugs or feature request to the author or use the
+Please report any bugs or feature requests to the author or use the
 bug tracker at L<http://bugs.th-h.de/>!
 
 =head1 SEE ALSO
