@@ -300,7 +300,8 @@ sub postfaq {
     $$NG = $Options{'t'};
     $MID =~ s/@/-$Timestamp-test@/g;
     $$ExtraHeaders .= "\n" if $$ExtraHeaders;
-    $$ExtraHeaders .= "X-Supersedes: $$Supersedes\nX-yapfaq-Remark: This is only a test message.";
+    $$ExtraHeaders .= "X-Supersedes: $$Supersedes\n" if $$Supersedes;
+    $$ExtraHeaders .= "X-yapfaq-Remark: This is only a test message.";
     undef $$Supersedes;
   }
 
