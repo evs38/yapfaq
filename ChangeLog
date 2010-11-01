@@ -1,3 +1,10 @@
+Version 0.9.1
+
+* Fix: Test mode: Add X-Supersedes only if Supersedes would be set.
+  Fixes #28.
+  Thomas Hochstein <thh@inter.net> Sun Oct 31 18:42:52 2010 +0100
+
+
 Version 0.9
 
 * Drop use of Fcntl (not needed).
