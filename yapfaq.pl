@@ -196,10 +196,6 @@ sub readconfig{
       warn "$0: W: The Message-ID format for your project \"$$Config[$i]{'name'}\" seems to be invalid - set to default.\n";
       $$Config[$i]{'mid-format'} = '<%n-%y-%m-%d@'.hostfqdn.'>'; # set default if mid-format is invalid
     }
-    unless(defined($$Config[$i]{'charset'})) {
-      warn "$0: W: Your project \"$$Config[$i]{'name'}\" has no encoding defined - set to default (UTF-8).\n";
-      $$Config[$i]{'charset'} = 'UTF-8';
-    }
   }
   $Error .= "-" x 25 . 'program terminated' . "-" x 25 . "\n" if $Error;
   die $Error if $Error;
@@ -300,7 +296,8 @@ sub postfaq {
   }
 
   # Set Charset
-  my $ContentType = sprintf('text/plain; charset=%s',$Charset);
+  $$Charset = 'UTF-8' if !$$Charset;
+  my $ContentType = sprintf('text/plain; charset=%s',$$Charset);
 
   # Test mode?
   if($Options{'t'} and $Options{'t'} !~ /console/i) {
