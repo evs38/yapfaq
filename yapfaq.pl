@@ -1,18 +1,18 @@
 #! /usr/bin/perl -W
 #
-# yapfaq Version 0.91 by Thomas Hochstein
+# yapfaq Version 0.10 by Thomas Hochstein
 # (Original author: Marc Brockschmidt)
 #
 # This script posts any project described in its config-file. Most people
 # will use it in combination with cron(8).
 # 
 # Copyright (C) 2003 Marc Brockschmidt <marc@marcbrockschmidt.de>
-# Copyright (c) 2010 Thomas Hochstein <thh@inter.net>
+# Copyright (c) 2010-2017 Thomas Hochstein <thh@inter.net>
 #
 # It can be redistributed and/or modified under the same terms under 
 # which Perl itself is published.
 
-our $VERSION = "0.91";
+our $VERSION = "0.10";
 
 # Please do not change this setting!
 # You may override the default .rc file (.yapfaqrc) by using "-c .rc file"
@@ -45,7 +45,7 @@ my %Options;
 getopts('Vhvpdt:f:c:s:', \%Options);
 # -V: print version / copyright information
 if ($Options{'V'}) {
-  print "$0 v $VERSION\nCopyright (c) 2003 Marc Brockschmidt <marc\@marcbrockschmidt.de>\nCopyright (c) 2010 Thomas Hochstein <thh\@inter.net>\n";
+  print "$0 v $VERSION\nCopyright (c) 2003 Marc Brockschmidt <marc\@marcbrockschmidt.de>\nCopyright (c) 2010-2017 Thomas Hochstein <thh\@inter.net>\n";
   print "This program is free software; you may redistribute it and/or modify it under the same terms as Perl itself.\n";
   exit(0);
 }
@@ -832,17 +832,17 @@ the last post of that FAQ.
 =head1 BUGS
 
 Please report any bugs or feature requests to the author or use the
-bug tracker at L<http://bugs.th-h.de/>!
+bug tracker at L<https://bugs.th-h.de/>!
 
 =head1 SEE ALSO
 
-L<http://th-h.de/download/scripts.php> will have the current
+L<https://th-h.de/net/software/yapfaq/> will have the current
 version of this program.
 
 This program is maintained using the Git version control system. You
 may clone L<git://code.th-h.de/usenet/yapfaq.git> to check out the
 current development tree or browse it on the web via
-L<http://code.th-h.de/?p=usenet/yapfaq.git>.
+L<https://code.th-h.de/?p=usenet/yapfaq.git>.
 
 =head1 AUTHOR
 
@@ -855,7 +855,7 @@ Marc Brockschmidt <marc@marcbrockschmidt.de>
 
 Copyright (c) 2003 Marc Brockschmidt <marc@marcbrockschmidt.de>
 
-Copyright (c) 2010 Thomas Hochstein <thh@inter.net>
+Copyright (c) 2010-2017 Thomas Hochstein <thh@inter.net>
 
 This program is free software; you may redistribute it and/or modify it
 under the same terms as Perl itself.
