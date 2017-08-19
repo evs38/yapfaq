@@ -3,6 +3,8 @@ yapfaq 0.10 (unreleased)
 * Add: Charset definition.
   Fixes #29.
 
+* Mark yapfaq.pl executable.
+
 
 Version 0.9.1
 
