@@ -82,7 +82,7 @@ foreach (@Config) {
   
   my ($ActName,$File,$PFreq,$Expire) =($$_{'name'},$$_{'file'},$$_{'posting-frequency'},$$_{'expires'});
   my ($From,$Subject,$NG,$Fup2)=($$_{'from'},$$_{'subject'},$$_{'ngs'},$$_{'fup2'});
-  my ($MIDF,$ReplyTo,$ExtHea)=($$_{'mid-format'},$$_{'reply-to'},$$_{'extraheader'});
+  my ($MIDF,$ReplyTo,$Charset,$ExtHea)=($$_{'mid-format'},$$_{'reply-to'},$$_{'charset'},$$_{'extraheader'});
   my ($Supersede)            =($$_{'supersede'});
 
   # -f: loop if not FAQ to post
@@ -111,7 +111,7 @@ foreach (@Config) {
     if($Options{'d'}) {
 	  print "$ActName: Would be posted now (but running in simulation mode [$0 -d]).\n" if $Options{'v'};
 	} else {
-      postfaq(\$ActName,\$File,\$From,\$Subject,\$NG,\$Fup2,\$MIDF,\$ExtHea,\$Config{'Sender'},\$TDY,\$TDM,\$TDD,\$ReplyTo,\$SupersedeMID,\$Expire);
+      postfaq(\$ActName,\$File,\$From,\$Subject,\$NG,\$Fup2,\$MIDF,\$Charset,\$ExtHea,\$Config{'Sender'},\$TDY,\$TDM,\$TDD,\$ReplyTo,\$SupersedeMID,\$Expire);
 	}
   } elsif($Options{'v'}) {
     print "$ActName: Nothing to do.\n";
@@ -196,6 +196,10 @@ sub readconfig{
       warn "$0: W: The Message-ID format for your project \"$$Config[$i]{'name'}\" seems to be invalid - set to default.\n";
       $$Config[$i]{'mid-format'} = '<%n-%y-%m-%d@'.hostfqdn.'>'; # set default if mid-format is invalid
     }
+    unless(defined($$Config[$i]{'charset'})) {
+      warn "$0: W: Your project \"$$Config[$i]{'name'}\" has no encoding defined - set to default (UTF-8).\n";
+      $$Config[$i]{'charset'} = 'UTF-8';
+    }
   }
   $Error .= "-" x 25 . 'program terminated' . "-" x 25 . "\n" if $Error;
   die $Error if $Error;
@@ -238,7 +242,7 @@ sub updatestatus {
 # It reads the data-file $File and then posts the article.
 
 sub postfaq {
-  my ($ActName,$File,$From,$Subject,$NG,$Fup2,$MIDF,$ExtraHeaders,$Sender,$TDY,$TDM,$TDD,$ReplyTo,$Supersedes,$Expire) = @_;
+  my ($ActName,$File,$From,$Subject,$NG,$Fup2,$MIDF,$Charset,$ExtraHeaders,$Sender,$TDY,$TDM,$TDD,$ReplyTo,$Supersedes,$Expire) = @_;
   my (@Header,@Body,$MID,$InRealBody,$LastModified);
 
   print "$$ActName: Preparing to post.\n" if($Options{'v'});
@@ -295,6 +299,9 @@ sub postfaq {
     $$Subject =~ s/[<\[{\(]?\%LM[>\]}\)]?//;
   }
 
+  # Set Charset
+  my $ContentType = sprintf('text/plain; charset=%s',$Charset);
+
   # Test mode?
   if($Options{'t'} and $Options{'t'} !~ /console/i) {
     $$NG = $Options{'t'};
@@ -317,7 +324,7 @@ sub postfaq {
   push @Header, "Sender: $$Sender\n" if $$Sender;
   push @Header, "Mime-Version: 1.0\n";
   push @Header, "Reply-To: $$ReplyTo\n" if $$ReplyTo;
-  push @Header, "Content-Type: text/plain; charset=ISO-8859-15\n";
+  push @Header, "Content-Type: $ContentType\n";
   push @Header, "Content-Transfer-Encoding: 8bit\n";
   push @Header, "User-Agent: yapfaq/$VERSION\n";
   if ($$ExtraHeaders) {
@@ -521,6 +528,14 @@ host B<yapfaq> is running on. Obviously that will only work if you
 have defined a reasonable hostname that the hostfqdn() function of
 Net::Domain can return.
 
+=item B<Charset> = I<encoding>  (optional)
+
+The character encoding of your FAQ. This setting is optional, but
+should match the encoding of your FAQ B<File>. Default is set to
+I<UTF-8>.
+
+This setting is copied verbatim to the I<Content-Type> header.
+
 =item B<Supersede> = I<yes>  (optional)
 
 Add Supersedes header to the message containing the Message-ID header
@@ -571,6 +586,10 @@ This setting is optional.
     
     # Message-ID ("%n" is $Name)
     # MID-Format = '<%n-%d.%m.%y@domain.invalid>'
+    
+    # Character Encoding
+    # This setting is optional. Default: UTF-8
+    # Charset = ISO-8859-15
     
     # Supersede last posting?
     Supersede = yes
