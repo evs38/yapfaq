@@ -7,7 +7,7 @@
 # will use it in combination with cron(8).
 # 
 # Copyright (C) 2003 Marc Brockschmidt <marc@marcbrockschmidt.de>
-# Copyright (c) 2010-2017 Thomas Hochstein <thh@inter.net>
+# Copyright (c) 2010-2017 Thomas Hochstein <thh@thh.name>
 #
 # It can be redistributed and/or modified under the same terms under 
 # which Perl itself is published.
@@ -45,7 +45,7 @@ my %Options;
 getopts('Vhvpdt:f:c:s:', \%Options);
 # -V: print version / copyright information
 if ($Options{'V'}) {
-  print "$0 v $VERSION\nCopyright (c) 2003 Marc Brockschmidt <marc\@marcbrockschmidt.de>\nCopyright (c) 2010-2017 Thomas Hochstein <thh\@inter.net>\n";
+  print "$0 v $VERSION\nCopyright (c) 2003 Marc Brockschmidt <marc\@marcbrockschmidt.de>\nCopyright (c) 2010-2017 Thomas Hochstein <thh\@thh.name>\n";
   print "This program is free software; you may redistribute it and/or modify it under the same terms as Perl itself.\n";
   exit(0);
 }
@@ -862,7 +862,7 @@ L<https://code.th-h.de/?p=usenet/yapfaq.git>.
 
 =head1 AUTHOR
 
-Thomas Hochstein <thh@inter.net>
+Thomas Hochstein <thh@thh.name>
 
 Original author (up to version 0.5b, dating from 2003):
 Marc Brockschmidt <marc@marcbrockschmidt.de>
@@ -871,7 +871,7 @@ Marc Brockschmidt <marc@marcbrockschmidt.de>
 
 Copyright (c) 2003 Marc Brockschmidt <marc@marcbrockschmidt.de>
 
-Copyright (c) 2010-2017 Thomas Hochstein <thh@inter.net>
+Copyright (c) 2010-2017 Thomas Hochstein <thh@thh.name>
 
 This program is free software; you may redistribute it and/or modify it
 under the same terms as Perl itself.
